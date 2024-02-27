@@ -1,0 +1,6 @@
+streamlit
+pandas
+numpy
+plotly
+yfinance
+kedro~=0.18.7

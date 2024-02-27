@@ -1,0 +1,87 @@
+
+visualize:
+  plotly_sample: 50000
+  show: true
+optimize:
+  methods: [scipy:SLSQP, monte carlo]
+  scipy_solver: SLSQP
+  optimize_on: Adj Close
+  monte_carlo_n_iters: 1000
+  subtract_risk_free: true
+data:
+  stocks:
+    start_date: "2021-01-01"
+    end_date: "2024-01-01"
+    period: daily
+    compute_pct_change_on: Adj Close
+    symbols:
+      - NASDAQ:MSFT # Microsoft
+      - NASDAQ:IBM # International Business Machines
+
+      # TECH: Top 10 Tech Stocks (Forbes, Dec 2023)
+      - NASDAQ:AAPL # Apple
+      - NASDAQ:NVDA # NVIDIA
+      - NASDAQ:AMZN # Amazon
+      - NASDAQ:EA # Electronic Arts
+      - NASDAQ:LRCX # Lam Research
+      - NASDAQ:TCEHY # Tencent Holdings
+      - NASDAQ:CPRT # Copart
+      - NASDAQ:GILD # Gilead Sciences
+      - NASDAQ:SNOW # Snowflake
+      - NASDAQ:META # Meta Platforms (formerly Facebook)
+
+      # HEALTHCARE: Top 12 Healthcare Stocks (Yahoo, Dec 2023)
+      - NASDAQ:CI # Cigna
+      - NASDAQ:CNC # Centene Corporation
+      - NASDAQ:INMD # InMode
+      - NASDAQ:HRMY # Harmony Biosciences
+      - NASDAQ:ZYME # Zymeworks
+      - NASDAQ:CCRN # Cross Country Healthcare
+      - NASDAQ:VYGR # Voyager Therapeutics
+      - NASDAQ:ARCT # Arcturus Therapeutics
+      - NASDAQ:ZYXI # Zynex
+      - NASDAQ:MOR # MorphoSys
+      - NASDAQ:SMLR # Semler Scientific
+
+      # AGRICULTURE: Top 15 Agriculture Stocks (Yahoo, Feb 2024)
+      - NYSE:DE # Deere & Company
+      - NYSE:CTVA # Corteva
+      - NYSE:ADM # Archer-Daniels-Midland
+      - NYSE:NTR # Nutrien
+      - NYSE:CNHI # CNH Industrial
+      - NYSE:LW # Lamb Weston Holdings
+      - NYSE:CF # CF Industries Holdings
+      - NYSE:BG # Bunge Limited
+      - NYSE:MOS # The Mosaic Company
+      - NYSE:TTC # Toro Company
+      - NYSE:AGCO # AGCO Corporation
+      - NYSE:FMC # FMC Corporation
+      - NYSE:INGR # Ingredion
+      - NYSE:DAR # Darling Ingredients
+      - OTC:SDPNF # Sundial Growers Inc.
+
+      # ENERGY: 13 Best Energy Stocks by Hedge Funds (Yahoo Finance, Feb 2024)
+      - NYSE:XOM # Exxon Mobil
+      - NYSE:OXY # Occidental Petroleum
+      - NYSE:CVX # Chevron
+      - NYSE:PXD # Pioneer Natural Resources
+      - NYSE:SLB # Schlumberger
+      - NYSE:COP # ConocoPhillips
+      - NYSE:HES # Hess Corporation
+      - NYSE:LNG # Cheniere Energy
+      - NYSE:CCJ # Cameco Corporation
+      - NYSE:DVN # Devon Energy
+      - NYSE:SHEL # Shell plc
+      - NYSE:MPC # Marathon Petroleum
+      - NYSE:EOG # EOG Resources
+
+      # FINANCE: Top Financial Stocks Of February 2024 (Forbes, Feb 2024)
+      # - NYSE:BRK.B # Berkshire Hathaway
+      - NYSE:V # Visa
+      - NYSE:JPM # JPMorgan Chase
+      - NYSE:MA # MasterCard
+      - NYSE:BAC # Bank of America
+      - OTCMKTS:CICHY # China Construction Bank
+      - OTCMKTS:BACHF # Bank of China
+      - NYSE:WFC # Wells Fargo
+      - OTCMKTS:IDCBY # Industrial and Commercial Bank of China
