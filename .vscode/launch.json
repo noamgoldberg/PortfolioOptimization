@@ -21,6 +21,17 @@
                 "run"
             ],
             "justMyCode": true
+        },
+        {
+            "name": "Streamlit: Run",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "streamlit",
+            "console": "integratedTerminal",
+            "args": [
+                "run", "app.py"
+            ],
+            "justMyCode": true
         }
     ]
 }

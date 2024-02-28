@@ -1,8 +1,9 @@
 from typing import Union, Iterable, Optional, Callable
 import yfinance as yf
 
-from portfolio_optimization.utils.wrapper_utils import wrapper
 from portfolio_optimization.utils.formatting_utils import strip_stock_symbol
+from portfolio_optimization.utils.kedro_utils import read_catalog
+from portfolio_optimization.utils.wrapper_utils import wrapper
 
 class StocksDataLoader:
     def __init__(
@@ -25,7 +26,6 @@ class StocksDataLoader:
             self._data.sort_index(axis=1, level=0, inplace=True)
         return self._data
 
-    
     def get_data(self, return_dict: bool = True):
         if return_dict:
             def _helper(ticker: str) -> Callable:

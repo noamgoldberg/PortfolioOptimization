@@ -19,7 +19,7 @@ def optimize_weights(
     ALL_METHODS = ["scipy", "monte carlo"]
     portfolio_set = PortfolioSet()
     methods = str2list(params["optimize"]["methods"])
-    if not all([m in ALL_METHODS for m in methods]):
+    if not all([m.split(':')[0] in ALL_METHODS for m in methods]):
         raise NotImplementedError(
             f"Optimization methods '{[m for m in methods if m not in ALL_METHODS]}' for not yet implemented"
         )
@@ -28,7 +28,9 @@ def optimize_weights(
     subtract_risk_free =  params["optimize"].get("subtract_risk_free", True)
     for method in methods:
         if method.split(":")[0] == "scipy":
-            scipy_solver = method.split(":")[1] or "SLSQP"
+            scipy_solver = "SLSQP"
+            if ':' in scipy_solver:
+                scipy_solver = method.split(":")[1] or "SLSQP"
             optimize_scipy(
                 stocks_data,
                 portfolio_set,
@@ -38,7 +40,9 @@ def optimize_weights(
                 subtract_risk_free=subtract_risk_free,
             )
         elif method.split(":")[0] == "monte carlo":
-            n_iters = method.split(":")[1] or 10000
+            n_iters = 10000
+            if ':' in scipy_solver:
+                n_iters = int(method.split(":")[1]) or 10000
             optimize_monte_carlo(
                 stocks_data,
                 portfolio_set,

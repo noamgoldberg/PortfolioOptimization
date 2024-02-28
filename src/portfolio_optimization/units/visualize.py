@@ -1,7 +1,28 @@
 import pandas as pd
-import numpy as np
 import plotly.graph_objects as go
-from typing import Iterable
+
+from portfolio_optimization.utils.data_utils import concat_partitions, filter_stocks_df_for_agg
+
+
+def plot_stock_prices(
+    stocks_data: pd.DataFrame,
+    agg: str = "Adj Close",
+) -> go.Figure:
+    fig = go.Figure()
+    stocks_data = filter_stocks_df_for_agg(concat_partitions(stocks_data), agg)
+    for ticker in stocks_data.columns:
+        fig.add_trace(go.Scatter(
+            x=stocks_data.index,
+            y=stocks_data[ticker], 
+            mode='lines', name=ticker
+        ))
+    fig.update_layout(
+        title="Stock Prices Over Time",
+        xaxis_title="Date",
+        yaxis_title="Stock Price",
+        xaxis=dict(rangeslider=dict(visible=True)),
+    )
+    return fig
 
 
 def plot_portfolios(
@@ -49,7 +70,13 @@ def plot_portfolios(
                 opacity=0.5,
                 color=method_colors[method],  # Use method-specific color
             ),
-            name=method
+            name=method,
+            hovertext=[
+                f"Volatility: {vol:.3f}<br>Return: {ret:.3f}<br>Sharpe Ratio: {sr:.3f}<br>" + 
+                "<br>".join([f"{k}: {v:.2%}" for k, v in row["Weights"].items()])
+                for vol, ret, sr, row in zip(sampled_portfolios['Volatility'], sampled_portfolios['Return'], sampled_portfolios['Sharpe Ratio'], sampled_portfolios.to_dict('records'))
+            ],
+            hoverinfo='text'
         ))
 
     # Plot best portfolios with special markers and assigned colors
@@ -68,11 +95,16 @@ def plot_portfolios(
                     width=2
                 ),
             ),
-            name=f"Best {portfolio['Method']}"
+            name=f"Best {portfolio['Method']}",
+            hovertext=[
+                f"Volatility: {portfolio['Volatility']:.3f}<br>Return: {portfolio['Return']:.3f}<br>Sharpe Ratio: {portfolio['Sharpe Ratio']:.3f}<br><br>" +
+                "<br>".join([f"{k}: {v:.2%}" for k, v in portfolio["Weights"].items()])
+            ],
+            hoverinfo='text'
         ))
 
     fig.update_layout(
-        title='<b>Portfolio Optimization Results</b><br><h2><i>The best of each method highlighted</i></h2>',
+        title='<b>Portfolio Optimization Results</b><br><i>The best of each method highlighted</i>',
         scene=dict(
             xaxis_title='Volatility',
             yaxis_title='Return',
@@ -85,98 +117,4 @@ def plot_portfolios(
     if show:
         fig.show()
 
-    return fig
-
-
-
-
-def plot_monte_carlo_iterations(
-    *,
-    return_arr: np.ndarray,
-    volatility_arr: np.ndarray,
-    sharpe_ratio_arr: np.ndarray,
-    all_weights_arr: np.ndarray,
-    tickers: Iterable,
-    sample: int = 10000,
-    show: bool = False
-):
-    fig = go.Figure()
-
-    # Adjusted function to include Sharpe Ratio in hover text
-    def create_hover_text(weights, tickers, sharpe_ratio=None):
-        top_indices = np.argsort(weights)[::-1][:10]  # Get indices of top 10 Weights
-        top_tickers = np.array(tickers)[top_indices]
-        top_weights = weights[top_indices]
-        hover_texts = [f"{ticker}: {weight:.5%}" for ticker, weight in zip(top_tickers, top_weights)]
-        if sharpe_ratio is not None:
-            hover_texts.insert(0, f"Sharpe Ratio: {sharpe_ratio:.5f}")  # Include Sharpe ratio at the start
-        return "<br>".join(hover_texts)
-    
-    # (1) Update for Max Sharpe Ratio Marker
-    max_sr_index = np.argmax(sharpe_ratio_arr)
-    max_sr_weights = all_weights_arr[max_sr_index]
-    max_sr_hover_text = create_hover_text(max_sr_weights, tickers, sharpe_ratio_arr[max_sr_index])
-    max_sr_ret = return_arr[max_sr_index]
-    max_sr_vol = volatility_arr[max_sr_index]
-    
-    max_sr_marker = go.Scatter(
-        x=[max_sr_vol],
-        y=[max_sr_ret],
-        mode='markers',
-        marker=dict(
-            symbol='x',
-            size=12,
-            color='Black',
-        ),
-        name='Max Sharpe Ratio',
-        text=[max_sr_hover_text],  # Set hover text
-        hoverinfo='text+x+y'
-    )
-    
-    # (2) Sample Non-Optimal Portfolios
-    total_points = min(return_arr.shape[0], sample)
-    indices = np.random.choice(return_arr.shape[0], total_points, replace=False)
-    
-    sampled_weights = all_weights_arr[indices]
-    sampled_returns = return_arr[indices]
-    sampled_volatilities = volatility_arr[indices]
-    sampled_sharpe_ratios = sharpe_ratio_arr[indices]
-    
-    sampled_hover_texts = [create_hover_text(weights, tickers, sharpe_ratio) for weights, sharpe_ratio in zip(sampled_weights, sampled_sharpe_ratios)]
-    
-    # (3) Scatter Plot Object for Sampled Points
-    scatter = go.Scatter(
-        x=sampled_volatilities,
-        y=sampled_returns,
-        mode='markers',
-        marker=dict(
-            size=8,
-            color=sampled_sharpe_ratios,
-            colorscale='Plasma',
-            colorbar=dict(title='Sharpe Ratio'),
-            line=dict(width=1, color='DarkSlateGrey')
-        ),
-        name='Data Points',
-        text=sampled_hover_texts,  # Set hover text for each point
-        hoverinfo='text+x+y'
-    )
-    
-    # (4) Add Traces
-    fig.add_trace(scatter)
-    fig.add_trace(max_sr_marker)
-    
-    # (5) Update Layout
-    fig.update_layout(
-        autosize=False,
-        width=700,
-        height=700,
-        title='Monte Carlo Simulation Results',
-        xaxis_title='Volatility',
-        yaxis_title='Return',
-        showlegend=True,
-        legend_orientation="h",
-    )
-    if show:
-        fig.show()
-    
     return fig

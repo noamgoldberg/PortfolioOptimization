@@ -48,7 +48,7 @@ def filter_stocks_df_for_agg(
 ):
     suffix = f"_{agg_col}"
     df = df[[f for f in df if f.endswith(suffix)]]
-    df.columns = [f.rstrip(suffix) for f in df]
+    df.columns = [f.replace(suffix, "") for f in df]
     return df
 
 def set_index(df: Union[Callable, pd.DataFrame], col: str = INDEX_COL) -> pd.DataFrame:

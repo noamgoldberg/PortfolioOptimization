@@ -10,7 +10,7 @@ def get_end_date(end_date: Optional[str], format: str = DATE_FORMAT) -> str:
 def format_date(date, format: str = DATE_FORMAT) -> str:
     if isinstance(date, str):
         date = pd.to_datetime(date)
-    if isinstance(date, (datetime.datetime, pd.Timestamp)):
+    if isinstance(date, (datetime.datetime, pd.Timestamp, datetime.date)):
         return date.strftime(format)
     raise ValueError(f"{date} ({type(date)}): Invalid value for date parameter")
     

@@ -30,8 +30,8 @@ https://kedro.readthedocs.io/en/stable/kedro_project_setup/settings.html."""
 # CONFIG_LOADER_CLASS = ConfigLoader
 
 from kedro.config import TemplatedConfigLoader
-from portfolio_optimization.consts import DATE_FORMAT
-from portfolio_optimization.utils.config_utils import read_params
+from portfolio_optimization.consts import CONF_ENV, DATE_FORMAT
+from portfolio_optimization.utils.kedro_utils import read_params
 from portfolio_optimization.utils.date_utils import format_date, get_end_date
 import warnings
 
@@ -40,7 +40,7 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 # warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 # (1) Establish Global Params
-params = read_params()
+params = read_params(conf=CONF_ENV, templated=False)
 CONFIG_LOADER_CLASS = TemplatedConfigLoader
 CONFIG_LOADER_ARGS = {
       "globals_dict": {

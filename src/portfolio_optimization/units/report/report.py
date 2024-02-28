@@ -1,7 +1,6 @@
 from typing import Optional, Union
 from pathlib import PosixPath, Path
 import pandas as pd
-from kedro.config import TemplatedConfigLoader
 import os
 
 from .section import Section
