@@ -4,3 +4,4 @@ numpy
 plotly
 yfinance
 kedro~=0.18.7
+scipy
