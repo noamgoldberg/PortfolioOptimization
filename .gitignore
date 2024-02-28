@@ -163,6 +163,3 @@ notebooks/*
 
 # Data
 data/*
-
-# Local Config Files
-conf/local/*
