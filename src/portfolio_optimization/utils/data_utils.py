@@ -9,16 +9,6 @@ from portfolio_optimization.utils.formatting_utils import str2list
 def callable2obj(obj: Any) -> Any:
     return obj() if callable(obj) else obj
 
-def verify_1D(arr: ArrayLike, name: Optional[str] = None):
-    error = ValueError(f"{arr.shape}: Shape of {name + ' ' if name else ''}array must be one dimensional")
-    if len(arr.shape) == 0:
-        raise error
-    if len(arr.shape) != 1:
-        if len(arr.shape) != 2:
-            raise error
-        elif arr.shape[1] != 1:
-            raise error
-
 def concat_partitions(dfs: Union[Dict[str, Union[Callable, pd.DataFrame]], Iterable[Union[Callable, pd.DataFrame]]]):
     if callable(dfs):
         dfs = dfs()
@@ -38,18 +28,26 @@ def compute_pct_change(
     *,
     compute_on: str,
     return_df: bool = False
-):
+) -> Union[pd.DataFrame, pd.Series]:
     pct_change = df[compute_on].pct_change()
     return pd.DataFrame(pct_change) if return_df else pct_change
 
 def filter_stocks_df_for_agg(
     df: pd.DataFrame,
     agg_col: str = "Adj Close",
-):
+) -> pd.DataFrame:
     suffix = f"_{agg_col}"
     df = df[[f for f in df if f.endswith(suffix)]]
     df.columns = [f.replace(suffix, "") for f in df]
     return df
+
+def get_stock_returns(
+    stocks_data: Dict[str, Union[Callable, pd.DataFrame]],
+    agg: str = "Adj Close",
+) -> pd.DataFrame:
+    stocks_data = filter_stocks_df_for_agg(concat_partitions(stocks_data), agg)
+    returns = stocks_data.pct_change().dropna()
+    return returns
 
 def set_index(df: Union[Callable, pd.DataFrame], col: str = INDEX_COL) -> pd.DataFrame:
     if not isinstance(col, str):

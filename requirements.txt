@@ -1,8 +1,10 @@
-streamlit
-pandas
-numpy
-plotly
-yfinance
+streamlit~=1.31.1
+pandas~=2.2.0
+numpy~=1.26.4
+plotly~=5.18.0
+yfinance~=0.2.36
 kedro~=0.18.7
-scipy
-tqdm
+scipy~=1.12.0
+tqdm~=4.66.1
+selenium~=4.18.1
+webdriver-manager~=4.0.1

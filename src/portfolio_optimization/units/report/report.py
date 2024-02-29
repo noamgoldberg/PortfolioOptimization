@@ -37,7 +37,7 @@ def generate_report(
     
     # Section 2: Monte Carlo Weights
     if portfolio_weights_monte_carlo is not None:
-        section_2_title = f"Weights: Monte Carlo ({params['optimize']['monte_carlo_n_iters']} iterations)"
+        section_2_title = f"Weights: Monte Carlo"
         section2 = Section(section_2_title, dropdown=True)
         section2.add_table(portfolio_weights_monte_carlo.reset_index())
         report.add_section(section2)

@@ -6,7 +6,7 @@ import scipy.optimize as sco
 from tqdm import tqdm
 
 from portfolio_optimization.datasets.portfolio_set import PortfolioSet
-from portfolio_optimization.utils.data_utils import concat_partitions, filter_stocks_df_for_agg
+from portfolio_optimization.utils.data_utils import get_stock_returns
 from portfolio_optimization.utils.financial_utils import get_num_trading_periods
 from portfolio_optimization.utils.formatting_utils import str2list
 from portfolio_optimization.consts import RISK_FREE_RATE
@@ -23,7 +23,7 @@ def optimize_weights(
         raise NotImplementedError(
             f"Optimization methods '{[m for m in methods if m not in ALL_METHODS]}' for not yet implemented"
         )
-    agg_col = params["optimize"]["optimize_on"]
+    agg = params["optimize"]["optimize_on"]
     period = params["data"]["stocks"]["period"]
     subtract_risk_free =  params["optimize"].get("subtract_risk_free", True)
     for method in methods:
@@ -34,7 +34,7 @@ def optimize_weights(
             optimize_scipy(
                 stocks_data,
                 portfolio_set,
-                agg_col=agg_col,
+                agg=agg,
                 period=period,
                 scipy_solver=scipy_solver,
                 subtract_risk_free=subtract_risk_free,
@@ -46,7 +46,7 @@ def optimize_weights(
             optimize_monte_carlo(
                 stocks_data,
                 portfolio_set,
-                agg_col=agg_col,
+                agg=agg,
                 period=period,
                 n_iters=n_iters,
                 subtract_risk_free=subtract_risk_free,
@@ -58,17 +58,15 @@ def optimize_scipy(
     stocks_data: Dict[str, Union[Callable, pd.DataFrame]],
     portfolio_set: PortfolioSet,
     *,
-    agg_col: str = "Adj Close",
+    agg: str = "Adj Close",
     period: str = "daily",
     scipy_solver: str = "SLSQP",  # default: Sequential Least Squares Programming (SLSQP)
     subtract_risk_free: bool = True
 ) -> pd.DataFrame:
         
-    # (1) Concat Partitions of Log Returns Data    
-    stocks_data = concat_partitions(stocks_data)
-    stocks_data = filter_stocks_df_for_agg(stocks_data, agg_col)
-    symbols = list(stocks_data.columns)
-    returns = stocks_data.pct_change().dropna()
+    # (1) Concat Partitions of Returns Data    
+    returns = get_stock_returns(stocks_data, agg)
+    symbols = returns.columns
     
     mean_annualized = returns.mean() * get_num_trading_periods(period)
     cov_annualized = returns.cov() * get_num_trading_periods(period)
@@ -99,20 +97,17 @@ def optimize_monte_carlo(
     stocks_data: Dict[str, Union[Callable, pd.DataFrame]],
     portfolio_set: PortfolioSet,
     *,
-    agg_col: str = "Adj Close",
+    agg: str = "Adj Close",
     period: str = "daily",
     n_iters: int = 20000,
     subtract_risk_free: bool = True,
 ) -> pd.DataFrame:
     
     # (1) Calculate Stock Returns by Single Period
-    stocks_data = concat_partitions(stocks_data)
-    stocks_data = filter_stocks_df_for_agg(stocks_data, agg_col)
-    symbols = list(stocks_data.columns)
-    returns = stocks_data.pct_change().dropna()
+    returns = get_stock_returns(stocks_data, agg)
+    symbols = returns.columns
 
     # (2) Initialize Arrays
-    # all_weights = np.zeros((n_iters, stocks_data.shape[1]))
     return_arr = np.zeros(n_iters)
     volatility_arr = np.zeros(n_iters)
     sharpe_arr = np.zeros(n_iters)
@@ -124,7 +119,7 @@ def optimize_monte_carlo(
     for i in tqdm(range(n_iters)):
         
         # a. Create Random Weights
-        weights = np.array(np.random.random(stocks_data.shape[1]))
+        weights = np.array(np.random.random(returns.shape[1]))
         weights = weights / np.sum(weights)
         
         # b. Get Expected Return, Expected Variance & Sharpe Ratio & Save Portfolio

@@ -1,8 +1,4 @@
-import numpy as np
-from numpy.typing import ArrayLike
-
-from portfolio_optimization.utils.data_utils import verify_1D
-from portfolio_optimization.consts import RISK_FREE_RATE, ANNUAL_TRADING_PERIODS
+from portfolio_optimization.consts import ANNUAL_TRADING_PERIODS
 
 
 def get_num_trading_periods(period: str):

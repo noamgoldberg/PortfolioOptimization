@@ -6,9 +6,7 @@ optimize:
   methods: 
     - scipy:SLSQP
     - monte carlo
-  scipy_solver: SLSQP
   optimize_on: Adj Close
-  monte_carlo_n_iters: 1000
   subtract_risk_free: true
 data:
   stocks:

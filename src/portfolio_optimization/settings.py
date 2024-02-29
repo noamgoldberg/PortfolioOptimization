@@ -47,8 +47,8 @@ CONFIG_LOADER_ARGS = {
           "symbols": params["data"]["stocks"]["symbols"],
           "start_date": format_date(params["data"]["stocks"]["start_date"], format=DATE_FORMAT),
           "end_date": get_end_date(params["data"]["stocks"].get("end_date"), format=DATE_FORMAT),
-          "n_iters": params["optimize"].get("monte_carlo_n_iters", 20000),
-          "scipy_solver": params["optimize"].get("scipy_solver", "SLSQP"),
+        #   "n_iters": params["optimize"].get("monte_carlo_n_iters", 20000),
+        #   "scipy_solver": params["optimize"].get("scipy_solver", "SLSQP"),
       }
 }
 

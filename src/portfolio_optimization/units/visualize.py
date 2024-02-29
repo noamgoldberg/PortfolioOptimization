@@ -1,11 +1,143 @@
+from typing import Optional, Union, Iterable, Dict, Callable
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.express as px
 
-from portfolio_optimization.utils.data_utils import concat_partitions, filter_stocks_df_for_agg
+from portfolio_optimization.utils.data_utils import concat_partitions, filter_stocks_df_for_agg, get_stock_returns
+from portfolio_optimization.utils.formatting_utils import str2list
 
+
+def plot_stock_prices_box_plot_dists(
+    stocks_data: pd.DataFrame,
+    agg: str = "Adj Close",
+    show: bool = True
+):
+    stocks_data = filter_stocks_df_for_agg(concat_partitions(stocks_data), agg)
+    return plot_grouped_boxplot(
+        stocks_data,
+        columns=stocks_data.columns,
+        title="Stock Prices Distribution",
+        xaxis_title="Stock",
+        yaxis_title="Price",
+        show=show
+    )
+
+def plot_stock_returns_box_plot_dists(
+    stocks_data: pd.DataFrame,
+    agg: str = "Adj Close",
+    show: bool = True
+):
+    stock_returns = get_stock_returns(stocks_data, agg)
+    return plot_grouped_boxplot(
+        stock_returns,
+        columns=stock_returns.columns,
+        title="Stock Returns Distribution",
+        xaxis_title="Stock",
+        yaxis_title="Return (%)",
+        show=show
+    )
+
+def plot_grouped_boxplot(
+    df: pd.DataFrame,
+    columns: Optional[Union[str, Iterable[str]]] = None,
+    title: str = "Grouped Box Plot",
+    xaxis_title: str = "Columns",
+    yaxis_title: str = "Values",
+    show: bool = True
+):
+    fig = go.Figure()
+    columns = df.columns if columns is None else str2list(columns)
+    for column in columns:
+        fig.add_trace(go.Box(y=df[column], name=column))
+    fig.update_layout(title=title, xaxis_title=xaxis_title, yaxis_title=yaxis_title, legend_title=xaxis_title)
+    if show:
+        fig.show()
+    return fig
+
+def plot_best_portfolio_weights(best_portfolio_weights: pd.DataFrame, show: bool = True) -> go.Figure:
+    return plot_bar_chart(
+        best_portfolio_weights,
+        x="Stock",
+        y="Weight",
+        title="Stock Weights for Optimal Portfolio",
+        orientation="h",
+        show=show
+    )
+
+def plot_bar_chart(
+    df: pd.DataFrame,
+    x: str,
+    y: str,
+    title: str = "Bar Chart",
+    orientation: str = 'v',
+    show: bool = True
+) -> go.Figure:
+    # Extend the color palette by concatenating multiple qualitative color palettes
+    base_colors = px.colors.qualitative.Plotly  # Default Plotly qualitative colors
+    extended_colors = base_colors + px.colors.qualitative.Alphabet + px.colors.qualitative.Light24
+    # Ensure the color list is long enough for 50+ categories, repeat the color list if necessary
+    colors = (extended_colors * ((len(df) // len(extended_colors)) + 1))[:len(df)]
+    
+    if orientation == 'v':  # Vertical bars
+        fig = go.Figure(data=[go.Bar(
+            x=df[x],
+            y=df[y],
+            marker_color=colors,  # Apply extended color sequence
+            orientation=orientation
+        )])
+    elif orientation == 'h':  # Horizontal bars
+        fig = go.Figure(data=[go.Bar(
+            x=df[y],
+            y=df[x],
+            marker_color=colors,  # Apply extended color sequence
+            orientation=orientation
+        )])
+    else:
+        raise ValueError("Orientation must be 'v' for vertical or 'h' for horizontal.")
+    
+    # Update layout with titles
+    fig.update_layout(title=title, xaxis_title=x if orientation == 'v' else y, yaxis_title=y if orientation == 'v' else x)
+    
+    if show:
+        fig.show()
+    return fig
+
+
+def plot_matrix_heatmap(matrix: pd.DataFrame, title: Optional[str] = None, show: bool = True):
+    fig = go.Figure(data=go.Heatmap(
+        z=matrix.values,
+        x=matrix.columns,
+        y=matrix.index,
+        colorscale='haline',
+        colorbar=dict(title="Scale")
+    ))
+    fig.update_layout(title=f"{title} Heatmap" if title else "", xaxis_title="Variables", yaxis_title="Variables")
+    if show:
+       fig.show()
+    return fig
+
+def plot_stock_returns(
+    stocks_data: Dict[str, Union[Callable, pd.DataFrame]],
+    agg: str = "Adj Close",
+) -> go.Figure:
+    fig = go.Figure()
+    returns = get_stock_returns(stocks_data, agg)
+    for ticker in returns.columns:
+        fig.add_trace(go.Scatter(
+            x=returns.index,
+            y=returns[ticker], 
+            mode='lines', name=ticker
+        ))
+    fig.update_layout(
+        title="Stock Returns Over Time",
+        xaxis_title="Date",
+        yaxis_title="Stock Return",
+        xaxis=dict(rangeslider=dict(visible=True)),
+    )
+    return fig
 
 def plot_stock_prices(
-    stocks_data: pd.DataFrame,
+    stocks_data: Dict[str, Union[Callable, pd.DataFrame]],
     agg: str = "Adj Close",
 ) -> go.Figure:
     fig = go.Figure()
