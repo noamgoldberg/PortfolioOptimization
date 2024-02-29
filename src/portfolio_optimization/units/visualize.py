@@ -204,7 +204,7 @@ def plot_portfolios(
             ),
             name=method,
             hovertext=[
-                f"Volatility: {vol:.3f}<br>Return: {ret:.3f}<br>Sharpe Ratio: {sr:.3f}<br>" + 
+                f"Volatility: {vol:.3f}<br>Return: {ret:.3f}<br>Sharpe Ratio: {sr:.3f}<br><br>" + 
                 "<br>".join([f"{k}: {v:.2%}" for k, v in row["Weights"].items()])
                 for vol, ret, sr, row in zip(sampled_portfolios['Volatility'], sampled_portfolios['Return'], sampled_portfolios['Sharpe Ratio'], sampled_portfolios.to_dict('records'))
             ],
