@@ -28,7 +28,7 @@ def run():
         NUM_SYMBOLS_LIMIT = 50
         symbols_input = parse_symbols(st.session_state.symbols)
         infos = {s: yfinance.ticker.Ticker(s).info for s in symbols_input}
-        invalid_symbols = [s for s, info in infos.items() if len(infos[s]) < 10]
+        invalid_symbols = [s for s, info in infos.items() if len(info) < 10]
         if len(invalid_symbols) > 0:
             st.error(f"Input invalid. The following tickers could not be found: {', '.join(invalid_symbols)}")
         elif len(symbols_input) > NUM_SYMBOLS_LIMIT:
@@ -37,7 +37,7 @@ def run():
         "Enter stock tickers, separated by commas (e.g., AAPL, GOOG, MSFT, ...)",
         "AAPL, GOOG, MSFT, BABA, META, V, C, XOM, OXY, SHEL, JPM, BAC, WFC, CVX, DE, CI",
         key="symbols",
-        on_change=check_input
+        on_change=check_input,
     )
     start_date = st.date_input(
         "Enter a 'Start Date' from which stock prices will be collected and analyzed",
