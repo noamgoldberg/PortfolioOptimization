@@ -109,7 +109,7 @@ def run():
                     # (7) Stocks Statistics
                     st.divider()
                     st.header(f"Stocks Statistics", anchor="stocks_statistics")
-                    st.write(f"Stocks: {params['data']['stocks']['symbols']}")
+                    st.write(f"Stocks: {', '.join(params['data']['stocks']['symbols'])}")
                     st.write(f"Start Date: {datasets['stock_prices_stats']['start_date']}")
                     st.write(f"End Date: {datasets['stock_prices_stats']['end_date']}")
                     
@@ -129,7 +129,7 @@ def run():
                             datasets["stock_prices_corr_matrix_plot"], "Stock Prices Correlation Matrix"
                         )
                         st.plotly_chart(stock_prices_corr_matrix_plot)
-                        st.write("How do these stocks move with one another")
+                        st.write("How do these stocks move with one anothe?")
                         st.write(
                             "This heatmap shows the correlation, or strength of the linear relationship, between each pair of stocks:\n"
                             "- Blue means a strong POSITIVE correlation, meaning the pair of stocks move up and down together\n"
