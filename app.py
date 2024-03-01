@@ -161,6 +161,7 @@ def run():
                     first_year_return = initial_investment * (1 + best_portfolio_return)
                     fifth_year_return = initial_investment * ((1 + best_portfolio_return) ** 5)
                     st.plotly_chart(datasets["best_portfolio_weights_plot"])
+                    st.plotly_chart(datasets["best_portfolio_forecast_plot"])
                     st.write(
                         "This chart presents a forecast for your portfolio, which was optimized using historical data to achieve the highest "
                         f"possible {optimize_for}."
@@ -178,14 +179,12 @@ def run():
                         f"- Solid Line: Represents the expected growth of your investment, based on the portfolio's average return of {datasets['best_portfolio']['Return']:.1%} and a "
                         f"spread of {datasets['best_portfolio']['Volatility']:.1%} from the {start_date} to the {end_date}."
                     )
-                    st.write("- Shaded Areas indicate the statistical confidence levels in the forecast:")
                     st.write("- Darker Shaded Area: 68% confidence interval. The more likely outcome (1 standard deviation), showing the range of valuations where your investment will land 68% of the time, statistically speaking (assuming a normal distribution).")
                     st.write("- Lighter Shaded Area: 95% confidence interval. The less likely outcome (2 standard deviations), showing the range of valuations where your investment will land 95% of the time, statistically speaking (assuming a normal distribution).")
                     st.write(
                         "This visualization is designed to help you grasp the potential range of returns for your optimized portfolio over the "
                         "coming years, giving you insight into both likely and less likely financial outcomes."
                     )
-                    st.plotly_chart(datasets["best_portfolio_forecast_plot"])
 
                     # (13) Plot Portfolios
                     st.subheader("All Portfolios", anchor="all_portfolios")
