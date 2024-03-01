@@ -19,7 +19,7 @@ from portfolio_optimization.utils.plotly_utils import change_plotly_fig_title
 
 def run():    
     
-    st.title("Stock Portfolio Optimization")
+    st.title("Stocks Portfolio Optimization")
 
     # (1) Establish (Local) Parameters
     def check_input():
