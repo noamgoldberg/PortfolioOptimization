@@ -24,7 +24,7 @@ def plot_best_portfolio_forecast(
         annual_return=best_portfolio["Return"],
         std_dev=best_portfolio["Volatility"],
         n_years=n_years,
-        metrics={metric.title(): f"{best_portfolio[metric]:.1%}"},
+        metrics={metric.title(): f"{best_portfolio[metric]:.1f}"},
         show=show,
     )
 

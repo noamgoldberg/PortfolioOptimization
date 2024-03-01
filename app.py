@@ -10,6 +10,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 from kedro.framework.session import KedroSession
 from kedro.framework.project import configure_project
+import yfinance
 
 from portfolio_optimization.consts import CONF_ENV, DATE_FORMAT
 from portfolio_optimization.utils.config_utils import write_yaml
@@ -22,22 +23,26 @@ def run():
     st.title("Stocks Portfolio Optimization")
 
     # (1) Establish (Local) Parameters
+    parse_symbols = lambda symbols_input: list(set([s.strip().upper() for s in symbols_input.split(',') if s.strip()]))
     def check_input():
-        user_input = list(set([s.strip().upper() for s in st.session_state.symbols.split(',')]))
-        if len(user_input) > 30:
-            st.error('Input invalid, too many tickers. Please enter 30 stock tickers or less.')
-        else:
-            pass
+        NUM_SYMBOLS_LIMIT = 50
+        symbols_input = parse_symbols(st.session_state.symbols)
+        infos = {s: yfinance.ticker.Ticker(s).info for s in symbols_input}
+        invalid_symbols = [s for s, info in infos.items() if len(infos[s]) < 10]
+        if len(invalid_symbols) > 0:
+            st.error(f"Input invalid. The following tickers could not be found: {', '.join(invalid_symbols)}")
+        elif len(symbols_input) > NUM_SYMBOLS_LIMIT:
+            st.error(f'Input invalid, too many tickers. Please enter {NUM_SYMBOLS_LIMIT} stock tickers or less.')
     symbols = st.text_input(
-        "Enter stock tickers, separated by commas (e.g., AAPL, GOOG, MSFT, BABA, META, V)",
-        "AAPL, GOOG, MSFT, BABA, META, V",
+        "Enter stock tickers, separated by commas (e.g., AAPL, GOOG, MSFT, ...)",
+        "AAPL, GOOG, MSFT, BABA, META, V, C, XOM, OXY, SHEL, JPM, BAC, WFC, CVX, DE, CI",
         key="symbols",
         on_change=check_input
     )
     start_date = st.date_input(
         "Enter a 'Start Date' from which stock prices will be collected and analyzed",
-        value=pd.to_datetime("2022-01-01"),
-        min_value=pd.to_datetime("2018-01-01", format=DATE_FORMAT),
+        value=pd.to_datetime("2020-01-01"),
+        min_value=pd.to_datetime("2010-01-01", format=DATE_FORMAT),
         max_value=datetime.today() - timedelta(weeks=8),
     )
     end_date = datetime.today().strftime(DATE_FORMAT)
@@ -51,7 +56,10 @@ def run():
             "of expected return."
         )
     with st.expander("What is the Sharpe Ratio? Why is it useful?"):
-        st.write("The Sharpe Ratio measures risk-adjusted returns by comparing the excess return of an investment to its volatility.")
+        st.write(
+            "The Sharpe Ratio measures risk-adjusted returns by comparing the excess return of an investment to "
+            "its volatility."
+        )
         st.write("""Formula:
     
         Sharpe Ratio = (Portfolio Return - Risk Free Rate) / Portfolio Volatility"""
@@ -86,7 +94,7 @@ def run():
                 # (4) Set (Local) Parameters
                 write_yaml({}, f"{PROJECT_PATH}/{CONF_ENV}/local/parameters.yml")
                 params = read_params(conf=CONF_ENV)
-                params["data"]["stocks"]["symbols"] = list(set([s.strip().upper() for s in symbols.split(',')]))
+                params["data"]["stocks"]["symbols"] = parse_symbols(symbols)
                 params["data"]["stocks"]["start_date"] = start_date.strftime(format=DATE_FORMAT)
                 params["visualize"]["show"] = False
                 write_yaml(params, f"{PROJECT_PATH}/{CONF_ENV}/local/parameters.yml")
@@ -94,15 +102,14 @@ def run():
                 # (5) Instantiate Kedro Session
                 configure_project("portfolio_optimization")
                 with KedroSession.create(project_path=PROJECT_PATH, conf_source="conf") as session:
-                    context = session.load_context()
                     
                     # (6) Run Pipeline
                     datasets = session.run(pipeline_name="portfolio_optimization")
                     
-                    # (7) Stocks Analysis
+                    # (7) Stocks Statistics
                     st.divider()
-                    st.header(f"Stocks Analysis", anchor="stocks_analysis")
-                    st.write(f"Stocks: {symbols}")
+                    st.header(f"Stocks Statistics", anchor="stocks_statistics")
+                    st.write(f"Stocks: {params['data']['stocks']['symbols']}")
                     st.write(f"Start Date: {datasets['stock_prices_stats']['start_date']}")
                     st.write(f"End Date: {datasets['stock_prices_stats']['end_date']}")
                     
@@ -118,9 +125,15 @@ def run():
                         st.write("This section analyzes the daily \"Adjusted Close\" price of each stock over time")
                         st.plotly_chart(datasets["stock_prices_plot"])
                         st.plotly_chart(datasets["stock_prices_box_plot"])
-                        stock_prices_cov_matrix_plot = change_plotly_fig_title(datasets["stock_prices_cov_matrix_plot"], "Stock Prices Correlation Matrix")
-                        st.write("How do these stocks move with one another? This heatmap shows how stongly each stock is related each of the other stocks.")
-                        st.plotly_chart(stock_prices_cov_matrix_plot)
+                        stock_prices_corr_matrix_plot = change_plotly_fig_title(
+                            datasets["stock_prices_corr_matrix_plot"], "Stock Prices Correlation Matrix"
+                        )
+                        st.plotly_chart(stock_prices_corr_matrix_plot)
+                        st.write(
+                            "How do these stocks move with one another? This heatmap shows how stongly each "
+                            "stock is related each of the other stocks. The lighter the color, the more the "
+                            "two stocks are correlated!"
+                        )
                     elif selected_stocks_data_type == stocks_data_type_options[1]:
                         st.subheader("Stats: Daily Stock Returns (%)")
                         st.write("This section analyzes the daily percentage increase/decrease of each stock over time")
@@ -148,9 +161,12 @@ def run():
                                 "for estimating the probability of various investment outcomes"
                             )
                             st.write(
-                                f"""SLSQP is typically much more effective than Monte Carlo simulations for portfolio optimization due to its 
-                                precision in finding optimal solutions under complex constraints. You may notice this in the scatterplot below,
-                                where SLSQP has most likely generated a set of portfolio weights that yield a signfiicantly higher {optimize_for}."""
+                                f"""SLSQP excels in cases like these where the task is to finding an optimal solutions under well-defined
+                                constraints. For example, (a) all weights must be between 0 and 1 and (b) all weights must add up to 1.
+                                Unlike Monte Carlo simulations, which relies mainly on randomness, SLQSP uses math to compute the set of
+                                optimal weights, rather than attempting to generate among a sea of random iterations.
+                                You may notice this in the scatterplot below, where SLSQP has most likely generated a set of portfolio 
+                                weights that yield a signfiicantly higher {optimize_for}."""
                             )
 
 
@@ -177,7 +193,7 @@ def run():
                         st.write("Understanding Your Forecast:")
                         st.write(
                             f"- Solid Line: Represents the expected growth of your investment, based on the portfolio's average return of {datasets['best_portfolio']['Return']:.1%} and a "
-                            f"spread of {datasets['best_portfolio']['Volatility']:.1%} from the {start_date} to the {end_date}."
+                            f"spread of {datasets['best_portfolio']['Volatility']:.1%} from {start_date} to {end_date}."
                         )
                         st.write("- Darker Shaded Area: 68% confidence interval. A broader set of outcomes (1 standard deviation), showing the range of valuations where your investment will land 68% of the time, statistically speaking (assuming a normal distribution).")
                         st.write("- Lighter Shaded Area: 95% confidence interval. An even broader (and therefore more confident) set of outcomes (2 standard deviations), showing the range of valuations where your investment will land 95% of the time, statistically speaking (assuming a normal distribution).")
@@ -221,7 +237,7 @@ def run():
             else:
                 st.error("Please enter tickers and select at least one method.")
         except:
-            st.error("One or more tickers invalid. Please try again.")
+            st.error("Input invalid. Please try again.")
             
         
 if __name__ == "__main__":

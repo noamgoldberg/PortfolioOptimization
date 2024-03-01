@@ -52,8 +52,8 @@ def create_pipeline(**kwargs):
                     "matrix": "stock_prices_corr_matrix",
                     "show": "params:visualize.show",
                 },
-                outputs="stock_prices_cov_matrix_plot",
-                name="plot_stock_prices_cov_matrix",
+                outputs="stock_prices_corr_matrix_plot",
+                name="plot_stock_prices_corr_matrix",
             ),            
             node(
                 func=plot_stock_prices,
