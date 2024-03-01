@@ -207,7 +207,7 @@ def plot_matrix_heatmap(matrix: pd.DataFrame, title: Optional[str] = None, show:
         z=matrix.values,
         x=matrix.columns,
         y=matrix.index,
-        colorscale='haline',
+        colorscale='RdBu',
         colorbar=dict(title="Scale")
     ))
     fig.update_layout(title=f"{title} Heatmap" if title else "", xaxis_title="Variables", yaxis_title="Variables")

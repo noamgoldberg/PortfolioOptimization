@@ -34,7 +34,7 @@ def run():
         elif len(symbols_input) > NUM_SYMBOLS_LIMIT:
             st.error(f'Input invalid, too many tickers. Please enter {NUM_SYMBOLS_LIMIT} stock tickers or less.')
     symbols = st.text_input(
-        "Enter stock tickers, separated by commas (e.g., AAPL, GOOG, MSFT, ...)",
+        "Enter stock tickers, separated by commas (e.g. AAPL, GOOG, MSFT, ...)",
         "AAPL, GOOG, MSFT, BABA, META, V, C, XOM, OXY, SHEL, JPM, BAC, WFC, CVX, DE, CI",
         key="symbols",
         on_change=check_input,
@@ -46,7 +46,7 @@ def run():
         max_value=datetime.today() - timedelta(weeks=8),
     )
     end_date = datetime.today().strftime(DATE_FORMAT)
-    optimize_for = st.selectbox("Select a metric to optimize for", options=["Sharpe Ratio"], index=0)
+    optimize_for = st.selectbox("Select a metric for which to optimize", options=["Sharpe Ratio"], index=0)
     
     # (2) Collapsable Q&As
     with st.expander("What is portfolio optimization?"):
@@ -129,10 +129,12 @@ def run():
                             datasets["stock_prices_corr_matrix_plot"], "Stock Prices Correlation Matrix"
                         )
                         st.plotly_chart(stock_prices_corr_matrix_plot)
+                        st.write("How do these stocks move with one another")
                         st.write(
-                            "How do these stocks move with one another? This heatmap shows how stongly each "
-                            "stock is related each of the other stocks. The lighter the color, the more the "
-                            "two stocks are correlated!"
+                            "This heatmap shows the correlation, or strength of the linear relationship, between each pair of stocks:\n"
+                            "- Blue means a strong POSITIVE correlation, meaning the pair of stocks move up and down together\n"
+                            "- Red means a strong NEGATIVE correlation, meaning the pair of stocks are inversely related - when one stock increases in value, the other decreases\n"
+                            "- White indicates a WEAK correlation (or no correlation), meaning the pair of stocks have little or no linear relationship\n"
                         )
                     elif selected_stocks_data_type == stocks_data_type_options[1]:
                         st.subheader("Stats: Daily Stock Returns (%)")
@@ -209,8 +211,8 @@ def run():
                         st.write(
                             """This scatterplot visualizes the risk-return profile of various portfolio configurations generated during optimization. 
                             Each point represents a portfolio, with its position indicating the trade-off between risk (volatility) and expected return.
-                            In addition to visualizing different optimization methods, this plot efficiency frontier - the set of optimal portfolios 
-                            that offer the highest expected return for a defined level of risk or the lowest risk for a given level of expected return."""
+                            In addition to visualizing different optimization methods, this plot visualizes the efficiency frontier - the set of optimal
+                            portfolios that offer the highest expected return for a defined level of risk or the lowest risk for a given level of expected return."""
                         )
                         st.write(
                             f"Pay attention to how the weights of different stocks in a the portfolios' returns, volatilities, and {optimize_for}s"
