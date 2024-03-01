@@ -179,8 +179,8 @@ def run():
                             f"- Solid Line: Represents the expected growth of your investment, based on the portfolio's average return of {datasets['best_portfolio']['Return']:.1%} and a "
                             f"spread of {datasets['best_portfolio']['Volatility']:.1%} from the {start_date} to the {end_date}."
                         )
-                        st.write("- Darker Shaded Area: 68% confidence interval. The more likely outcome (1 standard deviation), showing the range of valuations where your investment will land 68% of the time, statistically speaking (assuming a normal distribution).")
-                        st.write("- Lighter Shaded Area: 95% confidence interval. The less likely outcome (2 standard deviations), showing the range of valuations where your investment will land 95% of the time, statistically speaking (assuming a normal distribution).")
+                        st.write("- Darker Shaded Area: 68% confidence interval. A broader set of outcomes (1 standard deviation), showing the range of valuations where your investment will land 68% of the time, statistically speaking (assuming a normal distribution).")
+                        st.write("- Lighter Shaded Area: 95% confidence interval. An even broader (and therefore more confident) set of outcomes (2 standard deviations), showing the range of valuations where your investment will land 95% of the time, statistically speaking (assuming a normal distribution).")
                         st.write(
                             "This visualization is designed to help you grasp the potential range of returns for your optimized portfolio over the "
                             "coming years, giving you insight into both likely and less likely financial outcomes."
@@ -191,9 +191,10 @@ def run():
                         portfolios_plot = change_plotly_fig_title(datasets["portfolios_plot"], "")
                         st.plotly_chart(portfolios_plot)
                         st.write(
-                            f"""The portfolios scatterplot below visualizes the risk-return profile of various portfolio configurations. Each point represents a 
-                            portfolio, with its position indicating the trade-off between risk (volatility) and expected return. This aids in 
-                            visualizing the efficiency frontier and selecting an optimal portfolio."""
+                            """This scatterplot visualizes the risk-return profile of various portfolio configurations generated during optimization. 
+                            Each point represents a portfolio, with its position indicating the trade-off between risk (volatility) and expected return.
+                            In addition to visualizing different optimization methods, this plot efficiency frontier - the set of optimal portfolios 
+                            that offer the highest expected return for a defined level of risk or the lowest risk for a given level of expected return."""
                         )
                         st.write(
                             f"Pay attention to how the weights of different stocks in a the portfolios' returns, volatilities, and {optimize_for}s"
