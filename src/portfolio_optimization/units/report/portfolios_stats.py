@@ -2,14 +2,13 @@ from typing import Dict, Any
 import pandas as pd
 
 
-def get_best_portfolio_weights(
+def get_best_portfolio(
     portfolios: pd.DataFrame,
+    metric: str = "Sharpe Ratio"
 ) -> Dict[str, Any]:
-    best_weights = pd.Series(portfolios.sort_values(
-        "Sharpe Ratio", ascending=False
-    ).iloc[0]["Weights"]).reset_index()
-    best_weights.columns = ["Stock", "Weight"]
-    return best_weights
+    return portfolios.sort_values(
+        metric, ascending=False
+    ).iloc[0].to_dict()
 
 def get_portfolios_stats(
     portfolios: pd.DataFrame,

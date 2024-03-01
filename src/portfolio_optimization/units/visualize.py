@@ -1,10 +1,96 @@
-from typing import Optional, Union, Iterable, Dict, Callable
+from typing import Optional, Union, Iterable, Dict, Callable, Tuple, Any
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 
+from portfolio_optimization.units.report.portfolios_stats import get_best_portfolio
 from portfolio_optimization.utils.data_utils import concat_partitions, filter_stocks_df_for_agg, get_stock_returns
 from portfolio_optimization.utils.formatting_utils import str2list
+
+import numpy as np
+import plotly.graph_objects as go
+
+
+def plot_best_portfolio_forecast(
+    portfolios: pd.DataFrame,
+    initial_investment: Union[int, float] = 10000,
+    n_years: int = 5,
+    metric: str = "Sharpe Ratio",
+    show: bool = True,
+) -> go.Figure:
+    best_portfolio = get_best_portfolio(portfolios)
+    return plot_portfolio_forecast(
+        initial_investment=initial_investment,
+        annual_return=best_portfolio["Return"],
+        std_dev=best_portfolio["Volatility"],
+        n_years=n_years,
+        metrics={metric.title(): best_portfolio[metric]},
+        show=show,
+    )
+
+def plot_portfolio_forecast(
+    initial_investment: Union[int, float],
+    annual_return: float,
+    std_dev: float,
+    n_years: int = 5,
+    metrics: Optional[Dict[str, Union[float, int]]] = None,
+    show: bool = True,
+) -> go.Figure:
+    """
+    Plots the portfolio forecast over n years using the expected annual return and standard deviation.
+
+    Parameters:
+    - initial_investment: The initial amount invested.
+    - annual_return: The expected annual return rate (as a decimal).
+    - std_dev: The standard deviation of the portfolio's return (as a decimal).
+    - n_years: The number of years over which the forecast is made.
+    - metrics: Values associated with the portfolio (e.g. Sharpe Ratio), dict
+    - show: Whether or not to show the plot (fig.show())
+    """
+    # Generate years and data
+    years = np.arange(0, n_years + 1)
+    data = {"projected": [initial_investment * ((1 + annual_return) ** y) for y in years]}
+    num_stds_range = [1, 2]
+
+    # Initialize the figure
+    fig = go.Figure()
+
+    # Loop through each standard deviation range and create a single trace for each
+    for num_stds, pct, opacity in list(zip(num_stds_range, [68, 95], [0.45, 0.15]))[::-1]:
+        # Calculate the upper and lower bounds for the current standard deviation
+        upper_bound = [initial_investment * ((1 + annual_return + num_stds * std_dev) ** y) for y in years]
+        lower_bound = [initial_investment * ((1 + annual_return - num_stds * std_dev) ** y) for y in years]
+        
+        # Combine upper and lower bounds into a single trace
+        combined_y = upper_bound + lower_bound[::-1]  # Upper bound followed by lower bound reversed
+        combined_x = list(years) + list(years[::-1])  # Years for upper bound followed by years reversed for lower bound
+        
+        # Add combined trace to the figure
+        fig.add_trace(go.Scatter(
+            x=combined_x,
+            y=combined_y,
+            fill='toself',
+            fillcolor="green",
+            opacity=opacity,
+            line=dict(width=0),  # No line around the filled area
+            name=f'{pct}% Confidence Interval'
+        ))
+        
+    # Add projected portfolio value trace
+    fig.add_trace(go.Scatter(x=years, y=data["projected"], mode='lines', name='Projected Portfolio Value', line_color="yellow"))
+
+    # Update layout with title and axis labels
+    title = '<b>Portfolio Forecast with Confidence Intervals</b>'
+    if metrics:
+        metrics_str = ', '.join([f"{metric} = {value}" for metric, value in metrics.items()])
+        title += f"<br><i>{metrics_str}</i>"
+    fig.update_layout(title=title, xaxis_title='Years', yaxis_title='Portfolio Value', showlegend=True)
+
+    # Show the figure if requested
+    if show:
+        fig.show()
+    
+    return fig
 
 
 def plot_stock_prices_box_plot_dists(
@@ -54,9 +140,22 @@ def plot_grouped_boxplot(
         fig.show()
     return fig
 
+def get_best_portfolio_and_plot_weights(
+    portfolios: pd.DataFrame,
+    show: bool = True
+) -> Tuple[Dict[str, Any], go.Figure]:
+    best_portfolio = get_best_portfolio(portfolios)
+    best_portfolio_weights_plot = plot_best_portfolio_weights(
+        best_portfolio["Weights"],
+        show=show
+    )
+    return best_portfolio, best_portfolio_weights_plot
+
 def plot_best_portfolio_weights(best_portfolio_weights: pd.DataFrame, show: bool = True) -> go.Figure:
+    best_portfolio_weights_df = pd.Series(
+        best_portfolio_weights).reset_index().rename(columns={"index": "Stock", 0: "Weight"})
     return plot_bar_chart(
-        best_portfolio_weights,
+        best_portfolio_weights_df,
         x="Stock",
         y="Weight",
         title="Stock Weights for Optimal Portfolio",

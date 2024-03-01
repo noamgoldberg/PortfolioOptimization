@@ -9,12 +9,13 @@ from portfolio_optimization.units.visualize import (
     plot_stock_returns,
     plot_portfolios,
     plot_matrix_heatmap,
-    plot_best_portfolio_weights,
+    get_best_portfolio_and_plot_weights,
     plot_stock_prices_box_plot_dists,
     plot_stock_returns_box_plot_dists,
+    plot_best_portfolio_forecast
 )
 from portfolio_optimization.units.report.stock_prices_stats import get_stock_prices_stats, get_stock_stock_prices_corr_matrix
-from portfolio_optimization.units.report.portfolios_stats import get_portfolios_stats, get_best_portfolio_weights
+from portfolio_optimization.units.report.portfolios_stats import get_portfolios_stats
 from portfolio_optimization.units.report.report import generate_report
 
 
@@ -110,21 +111,25 @@ def create_pipeline(**kwargs):
                 name="get_portfolios_stats",
             ),
             node(
-                func=get_best_portfolio_weights,
+                func=get_best_portfolio_and_plot_weights,
                 inputs={
                     "portfolios": "portfolios",
-                },
-                outputs="best_portfolio_weights",
-                name="get_best_portfolio_weights",
-            ),
-            node(
-                func=plot_best_portfolio_weights,
-                inputs={
-                    "best_portfolio_weights": "best_portfolio_weights",
                     "show": "params:visualize.show",
                 },
-                outputs="best_portfolio_weights_plot",
-                name="plot_best_portfolio_weights",
+                outputs=["best_portfolio", "best_portfolio_weights_plot"],
+                name="get_best_portfolio_and_plot_weights",
+            ),
+            node(
+                func=plot_best_portfolio_forecast,
+                inputs={
+                    "portfolios": "portfolios",
+                    "initial_investment": "params:visualize.forecast_initial_investment",
+                    "n_years": "params:visualize.forecast_n_years",
+                    "metric": "params:optimize.optimize_for",
+                    "show": "params:visualize.show",
+                },
+                outputs="best_portfolio_forecast_plot",
+                name="plot_best_portfolio_forecast",
             ),
             node(
                 func=plot_portfolios,
