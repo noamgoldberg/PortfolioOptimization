@@ -5,7 +5,7 @@ def display_a_and_a():
         st.write(
             "Portfolio optimization is a mathematical method used to select the best stocks and their allocations "
             "to maximize returns for a given level of risk, or alternatively, to minimize risk for a given level "
-            "of expected return."
+            "of expected return." 
         )
     with st.expander("What is the Sharpe Ratio? Why is it useful?"):
         st.write(
@@ -34,7 +34,7 @@ def display_a_and_a():
         st.write(
             "Disadvantages:\n- Assumes returns are normally distributed, which is not always the case\n"
             "- Uses volatility (standard deviation) as its sole measure of risk, missing out on other "
-            "external factors that could indicate different kinds of risk\n- Sensitives to the risk "
+            "external factors that could indicate different kinds of risk\n- Sensitive to the risk "
             "free rate; ratio can fluctuate can fluctuate due to factors unrelated to the investment's "
             "performance, potentially misleading in different interest rate environments."
         )

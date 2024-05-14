@@ -20,6 +20,8 @@ def check_input():
         st.error(f'Input invalid, too many tickers. Please enter {NUM_SYMBOLS_LIMIT} stock tickers or less.')
 
 def gather_input():
+    optimize_for = "Sharpe Ratio"
+    st.write(f"Choose a set of stocks to evaluate, and generate the portfolio with the highest {optimize_for}!")
     symbols = st.text_input(
         "Enter stock tickers, separated by commas (e.g. AAPL, GOOG, MSFT, ...)",
         "AAPL, GOOG, MSFT, BABA, META, V, C, XOM, OXY, SHEL, JPM, BAC, WFC, CVX, DE, CI",
@@ -33,5 +35,6 @@ def gather_input():
         max_value=datetime.today() - timedelta(weeks=8),
     )
     end_date = datetime.today()
-    optimize_for = st.selectbox("Select a metric for which to optimize", options=["Sharpe Ratio"], index=0)
+    st.write(f"End date: {end_date.strftime(DATE_FORMAT)}")
+    st.write(f"Optimizing for: {optimize_for}")
     return symbols, start_date, end_date, optimize_for

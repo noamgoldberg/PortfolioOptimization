@@ -31,8 +31,10 @@ def display_results(
             )
             st.write(
                 f"""SLSQP excels in cases like these where the task is to finding an optimal solutions under well-defined
-                constraints. For example, (a) all weights must be between 0 and 1 and (b) all weights must add up to 1.
-                Unlike Monte Carlo simulations, which relies mainly on randomness, SLQSP uses math to compute the set of
+                constraints. For example, (a) all weights must be between 0 and 1 and (b) all weights must add up to 1."""
+            )
+            st.write(
+                f"""Unlike Monte Carlo simulations, which relies primarily on randomness, SLQSP uses math to compute the set of
                 optimal weights, rather than attempting to generate among a sea of random iterations.
                 You may notice this in the scatterplot below, where SLSQP has most likely generated a set of portfolio 
                 weights that yield a signfiicantly higher {params['optimize']['optimize_for']}."""
@@ -46,15 +48,15 @@ def display_results(
         fifth_year_return = initial_investment * ((1 + best_portfolio_return) ** 5)
         st.plotly_chart(datasets["best_portfolio_weights_plot"])
         st.subheader("Optimal Portfolio: Return Forecast", anchor="optimal_portfolio_return_plot")
+        st.write(f"This portfolio has an expected annual return of {best_portfolio_return:.1%}")
+        st.write(f"If you invested ${int(initial_investment):,.0f}, you would be expected to make:")
+        st.write(f"- ${int(first_year_return):,.0f} over your first year")
+        st.write(f"- ${int(fifth_year_return):,.0f} over your first 5 years")
         st.plotly_chart(datasets["best_portfolio_forecast_plot"])
         st.write(
             "This chart presents a forecast for your portfolio, which was optimized using historical data to achieve the highest "
             f"possible {params['optimize']['optimize_for']}."
         )
-        st.write(f"This portfolio has an expected annual return of {best_portfolio_return:.1%}")
-        st.write(f"If you invested ${int(initial_investment):,.0f}, you would be expected to make:")
-        st.write(f"- ${int(first_year_return):,.0f} over your first year")
-        st.write(f"- ${int(fifth_year_return):,.0f} over your first 5 years")
         st.write(
             "This metric is based on the assumption that investment returns follow a normal distribution, implying a predictable "
             "pattern of returns. While useful for planning, it's important to remember that actual market behavior can be unpredictable."
