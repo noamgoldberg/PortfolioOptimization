@@ -30,7 +30,7 @@ def run():
         )
     else:
         # Run Analysis and Store Results in Session State
-        if st.button("Analyze & Plot Results"):
+        if st.button("Optimize Portfolio & Simulate"):
             if parse_symbols(symbols):
                 
                 # Placeholder GIF
