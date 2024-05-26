@@ -20,7 +20,7 @@ def get_stock_prices_stats(
         "stats": stats,
     }
 
-def get_stock_stock_prices_corr_matrix(
+def get_stock_prices_corr_matrix(
     stocks_data: Dict[str, Union[Callable, pd.DataFrame]],
     agg: str = "Adj Close",
 ) -> pd.DataFrame:

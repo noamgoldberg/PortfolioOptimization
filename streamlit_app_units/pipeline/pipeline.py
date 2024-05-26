@@ -8,7 +8,7 @@ from kedro.framework.project import configure_project
 import yfinance
 
 from streamlit_app_units.input.input import parse_symbols, gather_input
-from streamlit_app_units.input.q_and_a import display_a_and_a
+from streamlit_app_units.input.q_and_a import display_q_and_a
 
 from portfolio_optimization.consts import CONF_ENV, DATE_FORMAT
 from portfolio_optimization.utils.config_utils import write_yaml
@@ -42,16 +42,21 @@ def run_pipeline(
     start_date: Union[pd.Timestamp, datetime],
     end_date: Union[pd.Timestamp, datetime],
     optimize_for: str,
+    project_name: str = "portfolio_optimization",
+    project_path: str = PROJECT_PATH,
+    conf_source: str = "conf",
+    pipeline_name: str = "portfolio_optimization"
 ):
     # (1) Establish (Local) Params
     params = set_local_params(symbols=symbols, start_date=start_date, optimize_for=optimize_for)
     
     # (2) Instantiate Kedro Session
-    configure_project("portfolio_optimization")
-    with KedroSession.create(project_path=PROJECT_PATH, conf_source="conf") as session:
+    configure_project(project_name)
+
+    with KedroSession.create(project_path=project_path, conf_source=conf_source) as session:
         
         # (3) Run Pipeline & 
-        datasets = session.run(pipeline_name="portfolio_optimization")
+        datasets = session.run(pipeline_name=pipeline_name)
     
     # (4) Return Params & (Non-Input, Output-Only) Datasets
     return params, datasets

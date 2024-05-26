@@ -1,6 +1,6 @@
 import streamlit as st
 
-def display_a_and_a():
+def display_q_and_a():
     with st.expander("What is portfolio optimization?"):
         st.write(
             "Portfolio optimization is a mathematical method used to select the best stocks and their allocations "
@@ -37,4 +37,10 @@ def display_a_and_a():
             "external factors that could indicate different kinds of risk\n- Sensitive to the risk "
             "free rate; ratio can fluctuate can fluctuate due to factors unrelated to the investment's "
             "performance, potentially misleading in different interest rate environments."
+        )
+    with st.expander("What is a Monte Carlo simulation?"):
+        st.write(
+            "A Monte Carlo Simulation is a statistical technique that utilizes random sampling and repeated "
+            "simulations to model and analyze the behavior and performance of complex systems or processes "
+            "over time."
         )

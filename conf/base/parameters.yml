@@ -1,16 +1,34 @@
-
 visualize:
   plotly_sample: 50000
-  show: true
+  show: false
   forecast_initial_investment: 100000
   forecast_n_years: 5
 optimize:
-  methods: 
-    - scipy:SLSQP
-    - monte carlo
+  solvers: 
+    - SLSQP
   optimize_for: Sharpe Ratio
   optimize_on: Adj Close
+  min_weight: 0.0001
   subtract_risk_free: true
+simulate:
+  initial_portfolio_value: 100000
+  timeframe: 90 # days
+  num_sims: 100
+evaluate:
+  alphas:
+    - 0.001
+    - 0.005
+    - 0.010
+    - 0.020
+    - 0.030
+    - 0.040
+    - 0.050
+    - 0.075
+    - 0.100
+    - 0.125
+    - 0.150
+    - 0.175
+    - 0.200
 data:
   stocks:
     start_date: "2021-01-01"

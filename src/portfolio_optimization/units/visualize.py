@@ -260,24 +260,24 @@ def plot_portfolios(
     portfolios: pd.DataFrame,
     sample: int = 50000,
     show: bool = False
-):
+) -> go.Figure:
     fig = go.Figure()
 
     # Define a color palette
     color_palette = ['blue', 'green', 'red', 'purple', 'orange', 'yellow', 'pink', 'cyan', 'magenta', 'grey']
     
-    # Group portfolios by method and find the best one in each group
-    portfolios_by_method = {}
+    # Group portfolios by solver and find the best one in each group
+    portfolios_by_solver = {}
     for index, row in portfolios.iterrows():
-        method = row['Method']
-        if method not in portfolios_by_method:
-            portfolios_by_method[method] = []
-        portfolios_by_method[method].append(row)
+        solver = row['Solver']
+        if solver not in portfolios_by_solver:
+            portfolios_by_solver[solver] = []
+        portfolios_by_solver[solver].append(row)
 
     best_portfolios = []
-    method_colors = {method: color_palette[i % len(color_palette)] for i, method in enumerate(portfolios_by_method.keys())}
+    solver_colors = {solver: color_palette[i % len(color_palette)] for i, solver in enumerate(portfolios_by_solver.keys())}
 
-    for method, portfolios in portfolios_by_method.items():
+    for solver, portfolios in portfolios_by_solver.items():
         # Convert list of portfolios to DataFrame for easier manipulation
         portfolios_df = pd.DataFrame(portfolios)
         best_portfolio = portfolios_df.loc[portfolios_df['Sharpe Ratio'].idxmax()]
@@ -290,7 +290,7 @@ def plot_portfolios(
         else:
             sampled_portfolios = portfolios_df
 
-        # Plot all (or sampled) portfolios for this method with assigned color
+        # Plot all (or sampled) portfolios for this solver with assigned color
         fig.add_trace(go.Scatter3d(
             x=sampled_portfolios['Volatility'],
             y=sampled_portfolios['Return'],
@@ -299,9 +299,9 @@ def plot_portfolios(
             marker=dict(
                 size=6,
                 opacity=0.5,
-                color=method_colors[method],  # Use method-specific color
+                color=solver_colors[solver],  # Use solver-specific color
             ),
-            name=method,
+            name=solver,
             hovertext=[
                 f"Volatility: {vol:.3f}<br>Return: {ret:.3f}<br>Sharpe Ratio: {sr:.3f}<br><br>" + 
                 "<br>".join([f"{k}: {v:.2%}" for k, v in row["Weights"].items()])
@@ -320,13 +320,13 @@ def plot_portfolios(
             marker=dict(
                 size=10,
                 symbol='diamond',
-                color=method_colors[portfolio['Method']],  # Use method-specific color
+                color=solver_colors[portfolio['Solver']],  # Use solver-specific color
                 line=dict(
                     color='Black',
                     width=2
                 ),
             ),
-            name=f"Best {portfolio['Method']}",
+            name=f"Best {portfolio['Solver']}",
             hovertext=[
                 f"Volatility: {portfolio['Volatility']:.3f}<br>Return: {portfolio['Return']:.3f}<br>Sharpe Ratio: {portfolio['Sharpe Ratio']:.3f}<br><br>" +
                 "<br>".join([f"{k}: {v:.2%}" for k, v in portfolio["Weights"].items()])
@@ -335,7 +335,7 @@ def plot_portfolios(
         ))
 
     fig.update_layout(
-        title='<b>Portfolio Optimization Results</b><br><i>The best of each method highlighted</i>',
+        title='<b>Portfolio Optimization Results</b><br><i>The best of each solver highlighted</i>',
         scene=dict(
             xaxis_title='Volatility',
             yaxis_title='Return',
@@ -349,3 +349,159 @@ def plot_portfolios(
         fig.show()
 
     return fig
+
+def plot_best_portfolio_weights(
+    weights_dict: Dict[str, float],
+    orientation: str = "h",
+    show: bool = False
+) -> go.Figure:
+    x_col, y_col = "Stock", "Weight"
+    df = pd.Series(weights_dict).reset_index().rename(columns={"index": x_col, 0: y_col})
+    return plot_bar_chart(
+        df=df,
+        x=x_col,
+        y=y_col,
+        title="Best Portfolio Weights",
+        orientation=orientation,
+        show=show,
+    )
+    
+
+def plot_portfolio_simulation_returns_over_time(portfolio_sims_df: pd.DataFrame, show: bool = False) -> go.Figure:
+    """
+    Plots the return over time of multiple portfolios.
+
+    Parameters:
+    - portfolio_sims_df: DataFrame containing the simulation results. Each column represents a portfolio simulation.
+    - show: Whether to display the plot immediately (default: False).
+
+    Returns:
+    - fig: Plotly Figure object.
+    """
+    fig = go.Figure()
+
+    for col in portfolio_sims_df.columns:
+        fig.add_trace(go.Scatter(
+            x=portfolio_sims_df.index,
+            y=portfolio_sims_df[col],
+            mode='lines',
+            name=f'Portfolio {col}'
+        ))
+
+    fig.update_layout(
+        title='Portfolio Returns Over Time',
+        xaxis_title='Time (days)',
+        yaxis_title='Portfolio Value ($)',
+        showlegend=True
+    )
+
+    if show:
+        fig.show()
+
+    return fig
+
+def plot_simulation_and_evaluation(
+    portfolio_sims_df: pd.DataFrame,
+    initial_portfolio_value: Optional[Union[int, float]] = None,
+    VaR: Optional[float] = None,
+    CVaR: Optional[float] = None,
+    dashed: bool = False,
+    show: bool = False
+) -> go.Figure:
+    """
+    Plots the return over time of multiple portfolios.
+
+    Parameters:
+    - portfolio_sims_df: DataFrame containing the simulation results. Each column represents a portfolio simulation.
+    - show: Whether to display the plot immediately (default: False).
+
+    Returns:
+    - fig: Plotly Figure object.
+    """
+    fig = go.Figure()
+    
+    COLD_COLORS = [
+        '#0000FF', '#1E90FF', '#00CED1', '#00FA9A', '#7FFFD4', '#5F9EA0', '#4682B4', '#6495ED', '#40E0D0', '#8A2BE2',
+        '#4B0082', '#483D8B', '#6A5ACD', '#000080', '#008080', '#2E8B57', '#3CB371', '#7B68EE'
+    ]
+
+    for i, col in enumerate(portfolio_sims_df.columns[::-1]):
+        fig.add_trace(go.Scatter(
+            x=portfolio_sims_df.index,
+            y=portfolio_sims_df[col],
+            mode='lines',
+            name=f'Portfolio {col}',
+            line=dict(color=COLD_COLORS[i % len(COLD_COLORS)])
+        ))
+
+    # Add VaR and CVaR lines
+    traces = {}
+    if initial_portfolio_value is not None:
+        for (name, value, color, dash) in [
+            ('CVaR = ${:,.0f}', CVaR, 'red', 'dot'),
+            ('VaR = ${:,.0f}', VaR, 'orange', 'dash'),
+        ]:
+            if value is not None:
+                trace_name = name.format(round(-value))
+                trace = go.Scatter(
+                    x=[portfolio_sims_df.index.min(), portfolio_sims_df.index.max()],
+                    y=[initial_portfolio_value + value, initial_portfolio_value + value],
+                    mode='lines',
+                    name=trace_name,
+                    line=dict(
+                        color=color,
+                        dash=dash if dashed else None
+                    )
+                )
+                traces[trace_name] = trace
+                fig.add_trace(trace)
+
+    fig.update_layout(
+        title='Portfolio Returns Over Time',
+        xaxis_title='Time (days)',
+        yaxis_title='Portfolio Value ($)',
+        showlegend=True
+    )
+    
+    fig.update_layout(
+        legend=dict(
+            traceorder="reversed"  # reverse the order of the traces in the legend
+        )
+    )
+    
+    if show:
+        fig.show()
+
+    return fig
+
+def plot_simulation_and_evaluation_all_alphas(
+    portfolio_sims_df: pd.DataFrame,
+    initial_portfolio_value: Optional[Union[int, float]] = None,
+    VaR_series: Optional[Union[Dict[float, Union[int, float]], pd.Series]] = None,
+    CVaR_series: Optional[Union[Dict[float, Union[int, float]], pd.Series]] = None,
+    show: bool = False
+) -> Dict[float, go.Figure]: # figure for each alpha
+    
+    if VaR_series is not None:
+        VaR_series = dict(VaR_series)
+    if CVaR_series is not None:
+        CVaR_series = dict(CVaR_series)
+
+    if VaR_series is not None and CVaR_series is not None:
+        if set(VaR_series.keys()) != set(CVaR_series.keys()):
+            raise ValueError("VaR and CVaR must have identical keys.")
+
+    figs_dict = {}
+    for alpha in (VaR_series or CVaR_series).keys():
+        VaR = VaR_series.get(alpha) if VaR_series else None
+        CVaR = CVaR_series.get(alpha) if CVaR_series else None
+        fig = plot_simulation_and_evaluation(
+            portfolio_sims_df,
+            initial_portfolio_value=initial_portfolio_value,
+            VaR=VaR,
+            CVaR=CVaR,
+            show=show
+        )
+        figs_dict[alpha] = fig
+
+    return figs_dict
