@@ -16,7 +16,7 @@ from streamlit_app_units.output.output import display_output
 def run():    
     
     # (1) Title
-    st.title("Portfolio Optimization & Monte Carlo Simulation")
+    st.title("Stock Portfolio Performance Simulator")
     
     # (2) Gather Input & Display Q&As
     symbols, start_date, end_date, optimize_for = gather_input()
