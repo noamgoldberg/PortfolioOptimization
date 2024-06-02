@@ -54,5 +54,11 @@ def simulate_portfolio_returns(
 def calculate_simulated_portfolio_returns(
     portfolio_simulations: pd.DataFrame,
     initial_portfolio_value: int,
-):
+) -> pd.Series:
     return portfolio_simulations.iloc[-1] - initial_portfolio_value
+
+def calculate_simulated_portfolio_returns_stats(
+    simulated_portfolio_returns: pd.Series,
+) -> pd.Series:
+    return simulated_portfolio_returns.describe()
+    

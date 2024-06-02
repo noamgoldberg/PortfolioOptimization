@@ -119,13 +119,16 @@ def display_simulation_and_evaluation(
         )
         
         # (3) Explain Results & Diplay Plot
-        explanation = "- With the selected :blue[**alpha of {alpha:.1%}**], the simulation shows a :orange[**VaR of \${VaR:,.0f}**] and a :red[**CVaR of " + \
+        explanation = "- The result of **{num_sims}** simulations indicate an expected return of :green[**\${expected_return:,.0f}**]\n- With the selected :blue[**alpha of {alpha:.1%}**], the simulation shows a :orange[**VaR of \${VaR:,.0f}**] and a :red[**CVaR of " + \
             "\${CVaR:,.0f}**]. \n- In other words, assuming an :violet[**initial investment of \${investment:,.0f}**], one can be " + \
             ":blue[**{confidence:.1%}**] confident that one will not lose more than :orange[**\${VaR:,.0f}**]. In the event that this portfolio " + \
             "loss threshold is exceeded (the unlikely :blue[**{alpha:.1%}**] of cases), the average expected loss is :red[**\${CVaR:,.0f}**]."
         initial_portfolio_value = params["simulate"]["initial_portfolio_value"]
-        fig2 = change_plotly_fig_title(simulation_and_evaluation_plots_dict.get(st.session_state['alpha']), "")
+        fig2 = simulation_and_evaluation_plots_dict.get(st.session_state['alpha'])
+        expected_return = datasets["simulated_portfolio_returns_stats"]["mean"]
         format_dict = dict(
+            num_sims=params["simulate"]["num_sims"],
+            expected_return=expected_return,
             alpha=st.session_state['alpha'],
             confidence=1 - st.session_state['alpha'],
             investment=initial_portfolio_value,
@@ -134,3 +137,7 @@ def display_simulation_and_evaluation(
         )
         st.markdown(explanation.format(**format_dict))
         st.plotly_chart(fig2)
+        
+         # (4)
+        fig3 = datasets["simulated_portfolio_returns_dist_plots"].get(st.session_state['alpha'])
+        st.plotly_chart(fig3)

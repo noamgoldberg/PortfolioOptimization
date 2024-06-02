@@ -2,6 +2,7 @@ from typing import Optional, Union, Iterable, Dict, Callable, Tuple, Any
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
+import plotly.figure_factory as ff
 
 from portfolio_optimization.units.report.portfolios_stats import get_best_portfolio
 from portfolio_optimization.utils.data_utils import concat_partitions, filter_stocks_df_for_agg, get_stock_returns
@@ -151,18 +152,6 @@ def get_best_portfolio_and_plot_weights(
     )
     return best_portfolio, best_portfolio_weights_plot
 
-def plot_best_portfolio_weights(best_portfolio_weights: pd.DataFrame, show: bool = True) -> go.Figure:
-    best_portfolio_weights_df = pd.Series(
-        best_portfolio_weights).reset_index().rename(columns={"index": "Stock", 0: "Weight"})
-    return plot_bar_chart(
-        best_portfolio_weights_df,
-        x="Stock",
-        y="Weight",
-        title="Stock Weights for Optimal Portfolio",
-        orientation="h",
-        show=show
-    )
-
 def plot_bar_chart(
     df: pd.DataFrame,
     x: str,
@@ -200,7 +189,6 @@ def plot_bar_chart(
     if show:
         fig.show()
     return fig
-
 
 def plot_matrix_heatmap(matrix: pd.DataFrame, title: Optional[str] = None, show: bool = True):
     fig = go.Figure(data=go.Heatmap(
@@ -254,7 +242,6 @@ def plot_stock_prices(
         xaxis=dict(rangeslider=dict(visible=True)),
     )
     return fig
-
 
 def plot_portfolios(
     portfolios: pd.DataFrame,
@@ -366,7 +353,6 @@ def plot_best_portfolio_weights(
         show=show,
     )
     
-
 def plot_portfolio_simulation_returns_over_time(portfolio_sims_df: pd.DataFrame, show: bool = False) -> go.Figure:
     """
     Plots the return over time of multiple portfolios.
@@ -431,33 +417,36 @@ def plot_simulation_and_evaluation(
             y=portfolio_sims_df[col],
             mode='lines',
             name=f'Portfolio {col}',
-            line=dict(color=COLD_COLORS[i % len(COLD_COLORS)])
+            line=dict(color=COLD_COLORS[i % len(COLD_COLORS)]),
         ))
 
     # Add VaR and CVaR lines
     traces = {}
+    num_pts = 30
     if initial_portfolio_value is not None:
         for (name, value, color, dash) in [
-            ('CVaR = ${:,.0f}', CVaR, 'red', 'dot'),
-            ('VaR = ${:,.0f}', VaR, 'orange', 'dash'),
+            ('CVaR = ${value:,.0f}', CVaR, 'red', 'dot'),
+            ('VaR = ${value:,.0f}', VaR, 'orange', 'dash'),
         ]:
             if value is not None:
-                trace_name = name.format(round(-value))
+                incr = (portfolio_sims_df.index.max() - portfolio_sims_df.index.min()) / num_pts
+                trace_name = name.format(color=color, value=-value)
                 trace = go.Scatter(
-                    x=[portfolio_sims_df.index.min(), portfolio_sims_df.index.max()],
-                    y=[initial_portfolio_value + value, initial_portfolio_value + value],
+                    x=[portfolio_sims_df.index.min() + (i * incr) for i in range(num_pts)],
+                    y=[initial_portfolio_value + value for _ in range(num_pts)],
                     mode='lines',
                     name=trace_name,
                     line=dict(
                         color=color,
                         dash=dash if dashed else None
-                    )
+                    ),
+                    hovertemplate='{name}<extra></extra>'.format(name=trace_name)
                 )
                 traces[trace_name] = trace
                 fig.add_trace(trace)
 
     fig.update_layout(
-        title='Portfolio Returns Over Time',
+        title='Simulated Portfolio Returns Over 90 Days',
         xaxis_title='Time (days)',
         yaxis_title='Portfolio Value ($)',
         showlegend=True
@@ -501,6 +490,86 @@ def plot_simulation_and_evaluation_all_alphas(
             VaR=VaR,
             CVaR=CVaR,
             show=show
+        )
+        figs_dict[alpha] = fig
+
+    return figs_dict
+
+def plot_simulated_portfolio_returns_dist(
+    returns: pd.Series,
+    mean: Optional[Union[int, float]] = None,
+    VaR: Optional[Union[int, float]] = None,
+    CVaR: Optional[Union[int, float]] = None,
+    show: bool = True,
+    bins: int = 25,
+) -> go.Figure:
+    group_labels = ['Simulated Returns']
+    fig = ff.create_distplot(
+        [returns.values],
+        group_labels,
+        bin_size=(returns.max() - returns.min()) / bins
+    )
+    num_pts = 20
+    max_density = np.histogram(returns, bins=bins, density=True)[0].max()
+    for (value, name, color, dash) in [
+        (mean, "Mean = {sign}${value:,}", "lightblue", "dash"),
+        (VaR, "VaR = {sign}${value:,}", "orange", None),
+        (CVaR, "CVaR = {sign}${value:,}", "red", None),
+    ]:
+        if value is not None:
+            incr = (max_density - 0) / num_pts
+            trace_name = name.format(sign=["", "-"][int(value<0)], value=int(np.abs(value)))
+            fig.add_trace(
+                go.Scatter(
+                    x=[value for _ in range(num_pts)],
+                    y=[0 + (i * incr) for i in range(num_pts)],
+                    mode="lines",
+                    line=dict(
+                        color=color,
+                        # width=2,
+                        dash=dash
+                    ),
+                    name=trace_name,
+                    hovertemplate='{name}<extra></extra>'.format(name=trace_name)
+                )
+            )
+    fig.update_layout(
+        title='Distribution of Simulated Portfolio Returns',
+        xaxis_title='Return ($)',
+        yaxis_title='Density',
+        showlegend=True
+    )
+    if show:
+        fig.show()
+    return fig
+
+def plot_simulated_portfolio_returns_dist_all_alphas(
+    returns: pd.Series,
+    VaR_series: Optional[Union[Dict[float, Union[int, float]], pd.Series]] = None,
+    CVaR_series: Optional[Union[Dict[float, Union[int, float]], pd.Series]] = None,
+    show: bool = True,
+    bins: int = 25,
+) -> Dict[float, go.Figure]: # figure for each alpha
+    
+    if VaR_series is not None:
+        VaR_series = dict(VaR_series)
+    if CVaR_series is not None:
+        CVaR_series = dict(CVaR_series)
+
+    if VaR_series is not None and CVaR_series is not None:
+        if set(VaR_series.keys()) != set(CVaR_series.keys()):
+            raise ValueError("VaR and CVaR must have identical keys.")
+    figs_dict = {}
+    for alpha in (VaR_series or CVaR_series).keys():
+        VaR = VaR_series.get(alpha) if VaR_series else None
+        CVaR = CVaR_series.get(alpha) if CVaR_series else None
+        fig = plot_simulated_portfolio_returns_dist(
+            returns=returns,
+            mean=returns.mean(),
+            VaR=VaR,
+            CVaR=CVaR,
+            show=show,
+            bins=bins,
         )
         figs_dict[alpha] = fig
 
