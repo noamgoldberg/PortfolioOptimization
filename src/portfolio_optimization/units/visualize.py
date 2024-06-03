@@ -391,6 +391,7 @@ def plot_simulation_and_evaluation(
     initial_portfolio_value: Optional[Union[int, float]] = None,
     VaR: Optional[float] = None,
     CVaR: Optional[float] = None,
+    days: int = 90,
     dashed: bool = False,
     show: bool = False
 ) -> go.Figure:
@@ -446,7 +447,7 @@ def plot_simulation_and_evaluation(
                 fig.add_trace(trace)
 
     fig.update_layout(
-        title='Simulated Portfolio Returns Over 90 Days',
+        title=f'Simulated Portfolio Returns Over {days} Days',
         xaxis_title='Time (days)',
         yaxis_title='Portfolio Value ($)',
         showlegend=True
@@ -468,6 +469,7 @@ def plot_simulation_and_evaluation_all_alphas(
     initial_portfolio_value: Optional[Union[int, float]] = None,
     VaR_series: Optional[Union[Dict[float, Union[int, float]], pd.Series]] = None,
     CVaR_series: Optional[Union[Dict[float, Union[int, float]], pd.Series]] = None,
+    days: int = 90,
     show: bool = False
 ) -> Dict[float, go.Figure]: # figure for each alpha
     
@@ -489,6 +491,7 @@ def plot_simulation_and_evaluation_all_alphas(
             initial_portfolio_value=initial_portfolio_value,
             VaR=VaR,
             CVaR=CVaR,
+            days=days,
             show=show
         )
         figs_dict[alpha] = fig
@@ -500,8 +503,9 @@ def plot_simulated_portfolio_returns_dist(
     mean: Optional[Union[int, float]] = None,
     VaR: Optional[Union[int, float]] = None,
     CVaR: Optional[Union[int, float]] = None,
-    show: bool = True,
     bins: int = 25,
+    days: int = 90,
+    show: bool = True,
 ) -> go.Figure:
     group_labels = ['Simulated Returns']
     fig = ff.create_distplot(
@@ -512,13 +516,13 @@ def plot_simulated_portfolio_returns_dist(
     num_pts = 20
     max_density = np.histogram(returns, bins=bins, density=True)[0].max()
     for (value, name, color, dash) in [
-        (mean, "Mean = {sign}${value:,}", "lightblue", "dash"),
-        (VaR, "VaR = {sign}${value:,}", "orange", None),
-        (CVaR, "CVaR = {sign}${value:,}", "red", None),
+        (mean, "Mean = {sign}${value:,.0f}", "lightblue", "dash"),
+        (VaR, "VaR = {sign}${value:,.0f}", "orange", None),
+        (CVaR, "CVaR = {sign}${value:,.0f}", "red", None),
     ]:
         if value is not None:
             incr = (max_density - 0) / num_pts
-            trace_name = name.format(sign=["", "-"][int(value<0)], value=int(np.abs(value)))
+            trace_name = name.format(sign=["", "-"][int(value<0)], value=np.abs(value))
             fig.add_trace(
                 go.Scatter(
                     x=[value for _ in range(num_pts)],
@@ -534,7 +538,7 @@ def plot_simulated_portfolio_returns_dist(
                 )
             )
     fig.update_layout(
-        title='Distribution of Simulated Portfolio Returns',
+        title=f'Distribution of Simulated Portfolio Returns Over {days} Days',
         xaxis_title='Return ($)',
         yaxis_title='Density',
         showlegend=True
@@ -547,8 +551,9 @@ def plot_simulated_portfolio_returns_dist_all_alphas(
     returns: pd.Series,
     VaR_series: Optional[Union[Dict[float, Union[int, float]], pd.Series]] = None,
     CVaR_series: Optional[Union[Dict[float, Union[int, float]], pd.Series]] = None,
-    show: bool = True,
     bins: int = 25,
+    days: int = 90,
+    show: bool = True,
 ) -> Dict[float, go.Figure]: # figure for each alpha
     
     if VaR_series is not None:
@@ -568,8 +573,9 @@ def plot_simulated_portfolio_returns_dist_all_alphas(
             mean=returns.mean(),
             VaR=VaR,
             CVaR=CVaR,
-            show=show,
             bins=bins,
+            days=days,
+            show=show,
         )
         figs_dict[alpha] = fig
 
