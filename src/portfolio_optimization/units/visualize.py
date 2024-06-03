@@ -517,8 +517,8 @@ def plot_simulated_portfolio_returns_dist(
     max_density = np.histogram(returns, bins=bins, density=True)[0].max()
     for (value, name, color, dash) in [
         (mean, "Mean = {sign}${value:,.0f}", "lightblue", "dash"),
-        (VaR, "VaR = {sign}${value:,.0f}", "orange", None),
         (CVaR, "CVaR = {sign}${value:,.0f}", "red", None),
+        (VaR, "VaR = {sign}${value:,.0f}", "orange", None),
     ]:
         if value is not None:
             incr = (max_density - 0) / num_pts
