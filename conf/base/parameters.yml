@@ -3,6 +3,8 @@ visualize:
   show: false
   forecast_initial_investment: 100000
   forecast_n_years: 5
+  VaR_color: red
+  CVaR_color: red
 optimize:
   solvers: 
     - SLSQP
@@ -11,7 +13,7 @@ optimize:
   min_weight: 0.0001
   subtract_risk_free: true
 simulate:
-  initial_portfolio_value: 100000
+  initial_investment: 100000
   timeframe: 90 # days
   num_sims: 100
 evaluate:

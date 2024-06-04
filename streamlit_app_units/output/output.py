@@ -2,7 +2,7 @@ from typing import Dict, Any
 import streamlit as st
 
 from streamlit_app_units.output.stats import display_stats
-from streamlit_app_units.output.results import display_optimize, display_simulation_and_evaluation
+from streamlit_app_units.output.results import display_results
 from streamlit_app_units.format import format_app_markdown
 
 
@@ -19,6 +19,6 @@ def display_output(
         "Analyze Historical Stocks Data"
     ])
     display_stats(tab=tab3, params=params, datasets=datasets)
-    display_simulation_and_evaluation(tab=tab1, datasets=datasets, params=params)
+    display_results(tab=tab1, datasets=datasets, params=params)
     format_app_markdown()
 

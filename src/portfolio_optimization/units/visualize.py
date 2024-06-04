@@ -6,7 +6,7 @@ import plotly.figure_factory as ff
 
 from portfolio_optimization.units.report.portfolios_stats import get_best_portfolio
 from portfolio_optimization.utils.data_utils import concat_partitions, filter_stocks_df_for_agg, get_stock_returns
-from portfolio_optimization.utils.formatting_utils import str2list
+from portfolio_optimization.utils.formatting_utils import str2list, format_currency_str
 
 import numpy as np
 import plotly.graph_objects as go
@@ -388,9 +388,11 @@ def plot_portfolio_simulation_returns_over_time(portfolio_sims_df: pd.DataFrame,
 
 def plot_simulation_and_evaluation(
     portfolio_sims_df: pd.DataFrame,
-    initial_portfolio_value: Optional[Union[int, float]] = None,
+    initial_investment: Optional[Union[int, float]] = None,
     VaR: Optional[float] = None,
     CVaR: Optional[float] = None,
+    VaR_color: Optional[str] = "red",
+    CVaR_color: Optional[str] = "red",
     days: int = 90,
     dashed: bool = False,
     show: bool = False
@@ -424,17 +426,17 @@ def plot_simulation_and_evaluation(
     # Add VaR and CVaR lines
     traces = {}
     num_pts = 30
-    if initial_portfolio_value is not None:
+    if initial_investment is not None:
         for (name, value, color, dash) in [
-            ('CVaR = ${value:,.0f}', CVaR, 'red', 'dot'),
-            ('VaR = ${value:,.0f}', VaR, 'orange', 'dash'),
+            ('CVaR = {value}', CVaR, CVaR_color, 'dot'),
+            ('VaR = {value}', VaR, VaR_color, 'dash'),
         ]:
             if value is not None:
                 incr = (portfolio_sims_df.index.max() - portfolio_sims_df.index.min()) / num_pts
-                trace_name = name.format(color=color, value=-value)
+                trace_name = name.format(color=color, value=format_currency_str(value, "$", 0, False))
                 trace = go.Scatter(
                     x=[portfolio_sims_df.index.min() + (i * incr) for i in range(num_pts)],
-                    y=[initial_portfolio_value + value for _ in range(num_pts)],
+                    y=[initial_investment + value for _ in range(num_pts)],
                     mode='lines',
                     name=trace_name,
                     line=dict(
@@ -466,9 +468,11 @@ def plot_simulation_and_evaluation(
 
 def plot_simulation_and_evaluation_all_alphas(
     portfolio_sims_df: pd.DataFrame,
-    initial_portfolio_value: Optional[Union[int, float]] = None,
+    initial_investment: Optional[Union[int, float]] = None,
     VaR_series: Optional[Union[Dict[float, Union[int, float]], pd.Series]] = None,
     CVaR_series: Optional[Union[Dict[float, Union[int, float]], pd.Series]] = None,
+    VaR_color: Optional[str] = "red",
+    CVaR_color: Optional[str] = "red",
     days: int = 90,
     show: bool = False
 ) -> Dict[float, go.Figure]: # figure for each alpha
@@ -488,9 +492,11 @@ def plot_simulation_and_evaluation_all_alphas(
         CVaR = CVaR_series.get(alpha) if CVaR_series else None
         fig = plot_simulation_and_evaluation(
             portfolio_sims_df,
-            initial_portfolio_value=initial_portfolio_value,
+            initial_investment=initial_investment,
             VaR=VaR,
             CVaR=CVaR,
+            VaR_color=VaR_color,
+            CVaR_color=CVaR_color,
             days=days,
             show=show
         )
@@ -503,6 +509,8 @@ def plot_simulated_portfolio_returns_dist(
     mean: Optional[Union[int, float]] = None,
     VaR: Optional[Union[int, float]] = None,
     CVaR: Optional[Union[int, float]] = None,
+    VaR_color: Optional[str] = "red",
+    CVaR_color: Optional[str] = "red",
     bins: int = 25,
     days: int = 90,
     show: bool = True,
@@ -516,9 +524,9 @@ def plot_simulated_portfolio_returns_dist(
     num_pts = 20
     max_density = np.histogram(returns, bins=bins, density=True)[0].max()
     for (value, name, color, dash) in [
-        (mean, "Mean = {sign}${value:,.0f}", "lightblue", "dash"),
-        (CVaR, "CVaR = {sign}${value:,.0f}", "red", None),
-        (VaR, "VaR = {sign}${value:,.0f}", "orange", None),
+        (mean, "Mean = {sign}${value:,.0f}", "#09ab3b", None),
+        (CVaR, "CVaR = {sign}${value:,.0f}", CVaR_color, None),
+        (VaR, "VaR = {sign}${value:,.0f}", VaR_color, None),
     ]:
         if value is not None:
             incr = (max_density - 0) / num_pts
@@ -551,6 +559,8 @@ def plot_simulated_portfolio_returns_dist_all_alphas(
     returns: pd.Series,
     VaR_series: Optional[Union[Dict[float, Union[int, float]], pd.Series]] = None,
     CVaR_series: Optional[Union[Dict[float, Union[int, float]], pd.Series]] = None,
+    VaR_color: Optional[str] = "red",
+    CVaR_color: Optional[str] = "red",
     bins: int = 25,
     days: int = 90,
     show: bool = True,
@@ -573,6 +583,8 @@ def plot_simulated_portfolio_returns_dist_all_alphas(
             mean=returns.mean(),
             VaR=VaR,
             CVaR=CVaR,
+            VaR_color=VaR_color,
+            CVaR_color=CVaR_color,
             bins=bins,
             days=days,
             show=show,

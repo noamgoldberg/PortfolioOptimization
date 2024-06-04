@@ -27,7 +27,7 @@ def simulate_portfolio_returns(
     # Monte Carlo parameters
     mc_sims = params["simulate"].get("num_sims", 400)  # Number of simulations
     T = params["simulate"].get("timeframe", 90)  # Timeframe in days
-    initial_portfolio_value = params["simulate"].get("initial_portfolio_value", 10000)
+    initial_investment = params["simulate"].get("initial_investment", 10000)
 
     # Initialize matrix to hold the simulation results
     portfolio_sims = np.full(shape=(T, mc_sims), fill_value=0.0)
@@ -44,7 +44,7 @@ def simulate_portfolio_returns(
         # Calculate daily returns with noise
         daily_returns = meanM + np.inner(L, Z)
         # Calculate cumulative returns
-        portfolio_sims[:, m] = np.cumprod(np.inner(weights, daily_returns.T) + 1) * initial_portfolio_value
+        portfolio_sims[:, m] = np.cumprod(np.inner(weights, daily_returns.T) + 1) * initial_investment
 
     # Convert the simulation results to a DataFrame
     portfolio_sims_df = pd.DataFrame(portfolio_sims, columns=[f"Simulation {i + 1}" for i in range(mc_sims)])
@@ -53,9 +53,9 @@ def simulate_portfolio_returns(
 
 def calculate_simulated_portfolio_returns(
     portfolio_simulations: pd.DataFrame,
-    initial_portfolio_value: int,
+    initial_investment: int,
 ) -> pd.Series:
-    return portfolio_simulations.iloc[-1] - initial_portfolio_value
+    return portfolio_simulations.iloc[-1] - initial_investment
 
 def calculate_simulated_portfolio_returns_stats(
     simulated_portfolio_returns: pd.Series,
