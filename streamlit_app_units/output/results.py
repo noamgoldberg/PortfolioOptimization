@@ -120,7 +120,8 @@ def _display_simulation_and_evaluation(
     col5.metric(f":{params['visualize']['CVaR_color']}[CVaR]", format_currency_str(CVaR, "$", 0), f"{CVaR / initial_investment:.2%}")
     
     # ...b.  Explanation of Results
-    explanation = "- The result of {num_sims} simulations indicate an expected return of {expected_return}\n- With the " + \
+    explanation = "- The result of {num_sims} simulations indicate an expected return of :{expected_return_color}" + \
+        "[**{expected_return}**] over a period of {projection_timeframe} days\n- With the " + \
         "selected :{alpha_color}[**alpha of {alpha:.1%}**], the simulation shows a :{VaR_color}[**VaR of {VaR}**] and " + \
         "a :{CVaR_color}[**CVaR of \${CVaR}**]. \n- In other words, assuming an initial investment of {investment}, one " + \
         "can be {confidence:.1%} confident that one will not lose more than {VaR}. In the event that this portfolio " + \
@@ -130,10 +131,12 @@ def _display_simulation_and_evaluation(
         expected_return=format_currency_str(expected_return, "$", 0),
         alpha=st.session_state['alpha'],
         confidence=1 - st.session_state['alpha'],
-        investment=format_currency_str(VaR, "$", 0, True),
+        investment=format_currency_str(initial_investment, "$", 0, True),
         alpha_color="red",
         VaR=format_currency_str(VaR, "$", 0, True),
         CVaR=format_currency_str(CVaR, "$", 0, True),
+        projection_timeframe=params["simulate"]["timeframe"],
+        expected_return_color=params["visualize"]["expected_return_color"],
         VaR_color=params["visualize"]["VaR_color"],
         CVaR_color=params["visualize"]["CVaR_color"],
     )

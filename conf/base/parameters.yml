@@ -3,6 +3,7 @@ visualize:
   show: false
   forecast_initial_investment: 100000
   forecast_n_years: 5
+  expected_return_color: green
   VaR_color: red
   CVaR_color: red
 optimize:
