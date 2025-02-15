@@ -26,7 +26,7 @@ class StocksDataLoader:
         return [obj] if isinstance(obj, str) else list(obj)
     
     def _test_yf_download(self):
-        test_symbols = ["AAPL"]
+        test_symbols = self.symbols
         stocks_data = self._download_and_clean_data(self.symbols, self.start_date, end_date=self.end_date)
         shape_msg = f"Shape of data: {stocks_data.shape}"
         print("TEST:", shape_msg)
