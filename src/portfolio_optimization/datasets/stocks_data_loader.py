@@ -19,17 +19,19 @@ class StocksDataLoader:
         self.start_date = start_date
         self.end_date = end_date
         self._data = None
+        self._test_yf_download()
     
     @staticmethod
     def obj2list(obj: Any) -> list:
         return [obj] if isinstance(obj, str) else list(obj)
     
-    def _test_download(self):
+    def _test_yf_download(self):
         test_symbols = ["AAPL"]
         stocks_data = self._download_and_clean_data(self.symbols, self.start_date, end_date=self.end_date)
+        shape_msg = f"Shape of data: {stocks_data.shape}"
+        print("TEST:", shape_msg)
         if stocks_data.shape[0] == 0 or stocks_data.shape[1] == 0:
-            msg = f"{test_symbols}: Failed to download stocks data from Yahoo Finance. " + \
-                f"Shape of data: {stocks_data.shape}"
+            msg = f"{test_symbols}: Failed to download stocks data from Yahoo Finance. {shape_msg}"
             raise Exception(msg)
         return stocks_data
         
