@@ -1,0 +1,7 @@
+stock_prices:
+  type: pandas.ParquetDataset
+  filepath: data/03_primary/stocks_data.parquet
+  # save_args:
+  #   compression: snappy
+  # load_args:
+  #   engine: pyarrow

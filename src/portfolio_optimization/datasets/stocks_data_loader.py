@@ -30,6 +30,8 @@ class StocksDataLoader:
         stocks_data = self._download_and_clean_data(self.symbols, self.start_date, end_date=self.end_date)
         shape_msg = f"Shape of data: {stocks_data.shape}"
         print("TEST:", shape_msg)
+        print("HEAD rows:", stocks_data.iloc[:5, 0])
+        print("HEAD cols:", stocks_data.columns[:5])
         if stocks_data.shape[0] == 0 or stocks_data.shape[1] == 0:
             msg = f"{test_symbols}: Failed to download stocks data from Yahoo Finance. {shape_msg}"
             raise Exception(msg)
