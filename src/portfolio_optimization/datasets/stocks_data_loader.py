@@ -1,5 +1,6 @@
-from typing import Union, Iterable, Optional, Callable
+from typing import Union, Iterable, Optional, Callable, Any, Dict
 import yfinance as yf
+import pandas as pd
 
 from portfolio_optimization.utils.formatting_utils import strip_stock_symbol
 from portfolio_optimization.utils.kedro_utils import read_catalog
@@ -12,21 +13,44 @@ class StocksDataLoader:
         start_date: str,
         end_date: Optional[str] = None,
     ):
-        self.symbols = [symbols] if isinstance(symbols, str) else list(symbols)
+        self.symbols = self.obj2list(symbols)
+        [symbols] if isinstance(symbols, str) else list(symbols)
         self.symbols = list(map(strip_stock_symbol, self.symbols))
         self.start_date = start_date
         self.end_date = end_date
         self._data = None
     
+    @staticmethod
+    def obj2list(obj: Any) -> list:
+        return [obj] if isinstance(obj, str) else list(obj)
+    
+    def _test_download(self):
+        test_symbols = ["AAPL"]
+        stocks_data = self._download_and_clean_data(self.symbols, self.start_date, end_date=self.end_date)
+        if stocks_data.shape[0] == 0 or stocks_data.shape[1] == 0:
+            msg = f"{test_symbols}: Failed to download stocks data from Yahoo Finance. " + \
+                f"Shape of data: {stocks_data.shape}"
+            raise Exception(msg)
+        return stocks_data
+        
+    @staticmethod
+    def _download_and_clean_data(
+        symbols: Union[str, Iterable[str]],
+        start_date: str,
+        end_date: Optional[str] = None,
+    ) -> pd.DataFrame:
+        data: pd.DataFrame = yf.download(symbols, start=start_date, end=end_date)
+        data.columns = data.columns.swaplevel(0, 1)
+        data.sort_index(axis=1, level=0, inplace=True)
+        return data
+    
     @property
-    def data(self):
+    def data(self) -> pd.DataFrame:
         if self._data is None:
-            self._data = yf.download(self.symbols, start=self.start_date, end=self.end_date)
-            self._data.columns = self._data.columns.swaplevel(0, 1)
-            self._data.sort_index(axis=1, level=0, inplace=True)
+            self._data = self._download_and_clean_data(self.symbols, self.start_date, end_date=self.end_date)
         return self._data
 
-    def get_data(self, return_dict: bool = True):
+    def get_data(self, return_dict: bool = True) -> Union[Dict, pd.DataFrame]:
         if return_dict:
             def _helper(ticker: str) -> Callable:
                 return self.data[ticker]
