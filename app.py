@@ -34,14 +34,17 @@ def run():
             if parse_symbols(symbols):
                 
                 # Placeholder GIF
-                placeholder = st.empty()
-                with placeholder:
+                placeholder_1 = st.empty()
+                placeholder_2 = st.empty()
+                with placeholder_1:
+                    st.markdown("<h4 style='text-align: center;'>...Analyzing</h4>", unsafe_allow_html=True)
+                with placeholder_2:
                     st.image(
                         "images/doing_science.gif",
-                        caption="...Doing Science",
+                        caption="...Patience...He's Doing Science",
                         use_column_width=True
                     )
-                    
+
                 # Generate Results
                 params, datasets = run_pipeline(
                     symbols=symbols,
@@ -53,7 +56,8 @@ def run():
                 st.session_state.datasets = datasets
                 
                 # Clear Placeholder & Display Results
-                placeholder.empty()
+                placeholder_1.empty()
+                placeholder_2.empty()
                 display_output(params=params, datasets=datasets)
                 
             else:

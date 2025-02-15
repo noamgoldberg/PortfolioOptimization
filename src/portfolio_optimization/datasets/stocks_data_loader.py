@@ -35,16 +35,23 @@ class StocksDataLoader:
             raise Exception(msg)
         return stocks_data
         
-    @staticmethod
     def _download_and_clean_data(
+        self,
         symbols: Union[str, Iterable[str]],
         start_date: str,
         end_date: Optional[str] = None,
+        batch_size: Optional[int] = 10,
     ) -> pd.DataFrame:
-        data: pd.DataFrame = yf.download(symbols, start=start_date, end=end_date)
-        data.columns = data.columns.swaplevel(0, 1)
-        data.sort_index(axis=1, level=0, inplace=True)
-        return data
+        symbols = self.obj2list(symbols)
+        all_data = []
+        for i in range(0, len(symbols), batch_size):
+            batch_symbols = symbols[i:i + batch_size]
+            data: pd.DataFrame = yf.download(batch_symbols, start=start_date, end=end_date)
+            data.columns = data.columns.swaplevel(0, 1)
+            data.sort_index(axis=1, level=0, inplace=True)
+            all_data.append(data)
+        
+        return pd.concat(all_data, axis=1) if all_data else pd.DataFrame()
     
     @property
     def data(self) -> pd.DataFrame:
