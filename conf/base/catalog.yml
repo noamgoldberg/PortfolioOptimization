@@ -1,5 +1,5 @@
 stock_prices:
-  type: pandas.ParquetDataset
+  type: pandas.ParquetDataSet
   filepath: data/03_primary/stocks_data.parquet
   # save_args:
   #   compression: snappy
