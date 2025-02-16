@@ -62,4 +62,3 @@ def calculate_simulated_portfolio_returns_stats(
     simulated_portfolio_returns: pd.Series,
 ) -> pd.Series:
     return simulated_portfolio_returns.describe()
-    
