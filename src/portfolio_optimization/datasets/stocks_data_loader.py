@@ -61,12 +61,16 @@ class StocksDataLoader:
             self._data = self._download_and_clean_data(self.symbols, self.start_date, end_date=self.end_date)
         return self._data
 
-    def get_data(self, return_dict: bool = True) -> Union[Dict, pd.DataFrame]:
+    def get_data(
+        self,
+        return_dict: bool = True,
+        _callable: bool = False
+    ) -> Union[Dict[str, Callable], pd.DataFrame]:
         if return_dict:
-            def _helper(ticker: str) -> Callable:
+            def _get_ticker_data(ticker: str) -> Callable:
                 return self.data[ticker]
             partitions = {
-                ticker: wrapper(_helper, ticker)
+                ticker: (wrapper(_get_ticker_data, ticker) if _callable else _get_ticker_data(ticker))
                 for ticker in self.data.columns.get_level_values('Ticker').unique()
             }
             return partitions

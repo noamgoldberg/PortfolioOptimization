@@ -9,7 +9,12 @@ from portfolio_optimization.utils.formatting_utils import str2list
 def callable2obj(obj: Any) -> Any:
     return obj() if callable(obj) else obj
 
-def concat_partitions(dfs: Union[Dict[str, Union[Callable, pd.DataFrame]], Iterable[Union[Callable, pd.DataFrame]]]):
+def concat_partitions(
+    dfs: Union[
+        Dict[str, Union[Callable, pd.DataFrame]],
+        Iterable[Union[Callable, pd.DataFrame]]
+    ]
+) -> pd.DataFrame:
     if callable(dfs):
         dfs = dfs()
     if isinstance(dfs, pd.DataFrame):
