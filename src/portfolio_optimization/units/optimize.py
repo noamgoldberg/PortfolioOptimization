@@ -36,7 +36,7 @@ def optimize_scipy(
     stocks_data: Dict[str, Union[Callable, pd.DataFrame]],
     portfolio_set: PortfolioSet,
     *,
-    agg: str = "Adj Close",
+    agg: str = "Close",
     period: str = "daily",
     solver: str = "SLSQP",  # default: Sequential Least Squares Programming (SLSQP)
     subtract_risk_free: bool = True

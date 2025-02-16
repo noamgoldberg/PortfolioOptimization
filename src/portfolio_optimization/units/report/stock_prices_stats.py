@@ -9,7 +9,7 @@ from portfolio_optimization.utils.financial_utils import get_num_trading_periods
 
 def get_stock_prices_stats(
     stocks_data: Dict[str, Union[Callable, pd.DataFrame]],
-    agg: str = "Adj Close",
+    agg: str = "Close",
 ) -> Dict[str, Any]:
     st.write("Data keys:", list(stocks_data.keys()))
     st.write("Agg:", agg)
@@ -30,14 +30,14 @@ def get_stock_prices_stats(
 
 def get_stock_prices_corr_matrix(
     stocks_data: Dict[str, Union[Callable, pd.DataFrame]],
-    agg: str = "Adj Close",
+    agg: str = "Close",
 ) -> pd.DataFrame:
     stocks_data: pd.DataFrame = filter_stocks_df_for_agg(concat_partitions(stocks_data), agg)
     return stocks_data.corr()
 
 def get_stock_returns_cov_matrix(
     stocks_data: Dict[str, Union[Callable, pd.DataFrame]],
-    agg: str = "Adj Close",
+    agg: str = "Close",
     period: str = "daily"
 ) -> pd.DataFrame:
     returns = get_stock_returns(stocks_data, agg)

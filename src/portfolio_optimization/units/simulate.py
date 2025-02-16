@@ -2,12 +2,13 @@ from typing import Any, Dict, Callable
 import numpy as np
 import pandas as pd
 
+from portfolio_optimization.utils.data_utils import callable2obj
 
 def simulate_portfolio_returns(
     stocks_data: Dict[str, Callable[[], pd.DataFrame]],
     weights_dict: Dict[str, float],
     params: Dict[str, Any],
-    agg: str = "Adj Close"
+    agg: str = "Close"
 ):
     # Convert the weights dictionary to a numpy array
     weights = np.array(list(weights_dict.values()))
@@ -16,7 +17,7 @@ def simulate_portfolio_returns(
     tickers = list(weights_dict.keys())
 
     # Extract the adjusted close prices for the selected tickers
-    agg_data = {ticker: stocks_data[ticker]()[agg] for ticker in tickers}
+    agg_data = {ticker: callable2obj(stocks_data[ticker])[agg] for ticker in tickers}
     agg_df = pd.DataFrame(agg_data)
     
     # Calculate returns

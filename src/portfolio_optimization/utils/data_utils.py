@@ -39,7 +39,7 @@ def compute_pct_change(
 
 def filter_stocks_df_for_agg(
     df: pd.DataFrame,
-    agg_col: str = "Adj Close",
+    agg_col: str = "Close",
 ) -> pd.DataFrame:
     suffix = f"_{agg_col}"
     df = df[[f for f in df if f.endswith(suffix)]]
@@ -48,7 +48,7 @@ def filter_stocks_df_for_agg(
 
 def get_stock_returns(
     stocks_data: Dict[str, Union[Callable, pd.DataFrame]],
-    agg: str = "Adj Close",
+    agg: str = "Close",
 ) -> pd.DataFrame:
     stocks_data = filter_stocks_df_for_agg(concat_partitions(stocks_data), agg)
     returns = stocks_data.pct_change().dropna()

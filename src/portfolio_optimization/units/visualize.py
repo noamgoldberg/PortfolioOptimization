@@ -96,7 +96,7 @@ def plot_portfolio_forecast(
 
 def plot_stock_prices_box_plot_dists(
     stocks_data: pd.DataFrame,
-    agg: str = "Adj Close",
+    agg: str = "Close",
     show: bool = True
 ):
     stocks_data = filter_stocks_df_for_agg(concat_partitions(stocks_data), agg)
@@ -111,7 +111,7 @@ def plot_stock_prices_box_plot_dists(
 
 def plot_stock_returns_box_plot_dists(
     stocks_data: pd.DataFrame,
-    agg: str = "Adj Close",
+    agg: str = "Close",
     show: bool = True
 ):
     stock_returns = get_stock_returns(stocks_data, agg)
@@ -205,7 +205,7 @@ def plot_matrix_heatmap(matrix: pd.DataFrame, title: Optional[str] = None, show:
 
 def plot_stock_returns(
     stocks_data: Dict[str, Union[Callable, pd.DataFrame]],
-    agg: str = "Adj Close",
+    agg: str = "Close",
 ) -> go.Figure:
     fig = go.Figure()
     returns = get_stock_returns(stocks_data, agg)
@@ -225,7 +225,7 @@ def plot_stock_returns(
 
 def plot_stock_prices(
     stocks_data: Dict[str, Union[Callable, pd.DataFrame]],
-    agg: str = "Adj Close",
+    agg: str = "Close",
 ) -> go.Figure:
     fig = go.Figure()
     stocks_data = filter_stocks_df_for_agg(concat_partitions(stocks_data), agg)
