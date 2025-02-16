@@ -31,7 +31,7 @@ def run():
     st.title("Stock Portfolio Performance Simulator")
     
     # (2) Gather Input & Display Q&As
-    symbols, start_date, end_date, optimize_for = gather_input()
+    symbols_input, start_date, end_date, optimize_for = gather_input()
     display_q_and_a()
     
     # (3) Launch App
@@ -43,7 +43,7 @@ def run():
     else:
         # Run Analysis and Store Results in Session State
         if st.button("Optimize Portfolio & Simulate"):
-            symbols = list(map(strip_stock_symbol, parse_symbols(symbols)))
+            symbols_list = list(map(strip_stock_symbol, parse_symbols(symbols_input)))
             if symbols:
                 invalid_tickers = [symbol for symbol in symbols if not is_ticker_valid(symbol)]
                 

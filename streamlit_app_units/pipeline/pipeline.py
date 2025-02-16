@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 import os
 import streamlit as st
 import pandas as pd
@@ -14,13 +14,14 @@ from portfolio_optimization.consts import CONF_ENV, DATE_FORMAT
 from portfolio_optimization.utils.config_utils import write_yaml
 from portfolio_optimization.utils.kedro_utils import read_params
 from portfolio_optimization.utils.plotly_utils import change_plotly_fig_title
+from portfolio_optimization.utils.formatting_utils import strip_stock_symbol
 
 
 PROJECT_PATH = os.getcwd()
 
 def set_local_params(
     *,
-    symbols: str,
+    symbols: Union[List[str], str],
     start_date: Union[pd.Timestamp, datetime],
     optimize_for: str,
 ):
@@ -29,7 +30,8 @@ def set_local_params(
     
     # (2) Set New Local Params
     params = read_params(conf=CONF_ENV)
-    params["data"]["stocks"]["symbols"] = parse_symbols(symbols)
+    symbols = parse_symbols(symbols) if isinstance(symbols, str) else symbols
+    params["data"]["stocks"]["symbols"] = list(map(strip_stock_symbol, symbols))
     params["data"]["stocks"]["start_date"] = start_date.strftime(format=DATE_FORMAT)
     params["visualize"]["show"] = False
     write_yaml(params, f"{PROJECT_PATH}/{CONF_ENV}/local/parameters.yml")
@@ -38,7 +40,7 @@ def set_local_params(
 
 def run_pipeline(
     *,
-    symbols,
+    symbols: Union[List[str], str],
     start_date: Union[pd.Timestamp, datetime],
     end_date: Union[pd.Timestamp, datetime],
     optimize_for: str,
