@@ -1,7 +1,7 @@
-# stock_prices:
-#   type: pickle.PickleDataSet
-#   filepath: data/03_primary/stocks_data.dict
-#   # save_args:
-#   #   compression: snappy
-#   # load_args:
-#   #   engine: pyarrow
+stock_prices:
+  type: pickle.PickleDataSet
+  filepath: data/03_primary/stocks_data.dict
+  # save_args:
+  #   compression: snappy
+  # load_args:
+  #   engine: pyarrow
