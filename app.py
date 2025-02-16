@@ -43,7 +43,7 @@ def run():
     else:
         # Run Analysis and Store Results in Session State
         if st.button("Optimize Portfolio & Simulate"):
-            symbols_list = list(map(strip_stock_symbol, parse_symbols(symbols_input)))
+            symbols = list(map(strip_stock_symbol, parse_symbols(symbols_input)))
             if symbols:
                 invalid_tickers = [symbol for symbol in symbols if not is_ticker_valid(symbol)]
                 
