@@ -1,10 +1,10 @@
-from typing import Iterable, Union
+from typing import Iterable, Union, Optional
 import pandas as pd
 import numpy as np
 
 
 def strip_stock_symbol(symbol: str):
-    return symbol.split(":")[-1]
+    return symbol.split(":")[-1].replace('.', '-')
 
 def iterable2list(obj: Iterable):
     if isinstance(obj, (list, tuple, set, pd.Index, np.ndarray)):

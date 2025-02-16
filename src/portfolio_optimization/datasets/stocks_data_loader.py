@@ -1,12 +1,14 @@
 from typing import Union, Iterable, Optional, Callable, Any, Dict
 import yfinance as yf
 import pandas as pd
+import streamlit as st
 
 from portfolio_optimization.utils.formatting_utils import strip_stock_symbol
 from portfolio_optimization.utils.kedro_utils import read_catalog
 from portfolio_optimization.utils.wrapper_utils import wrapper
 
 class StocksDataLoader:
+    
     def __init__(
         self,
         symbols: Union[str, Iterable[str]],
@@ -16,28 +18,44 @@ class StocksDataLoader:
         self.symbols = self.obj2list(symbols)
         [symbols] if isinstance(symbols, str) else list(symbols)
         self.symbols = list(map(strip_stock_symbol, self.symbols))
+        invalid_tickers = [symbol for symbol in self.symbols if not self.is_ticker_valid(symbol)]
+        if len(invalid_tickers) > 0:
+            error = f"The following tickers are invalid: {invalid_tickers}"
+            st.error(error)
+            raise Exception(error)
         self.start_date = start_date
         self.end_date = end_date
         self._data = None
-        self._test_yf_download()
+        # self._test_yf_download()
     
     @staticmethod
     def obj2list(obj: Any) -> list:
         return [obj] if isinstance(obj, str) else list(obj)
     
-    def _test_yf_download(self):
-        test_symbols = self.symbols
-        stocks_data = self._download_and_clean_data(self.symbols, self.start_date, end_date=self.end_date)
-        shape_msg = f"Shape of data: {stocks_data.shape}"
-        print("TEST:", shape_msg)
-        print("HEAD rows:", stocks_data.iloc[:5, 0])
-        print("HEAD cols:", stocks_data.columns[:5])
-        if stocks_data.shape[0] == 0 or stocks_data.shape[1] == 0:
-            msg = f"{test_symbols}: Failed to download stocks data from Yahoo Finance. {shape_msg}"
-            raise Exception(msg)
-        return stocks_data
+    @staticmethod
+    def is_ticker_valid(ticker: str):
+        """
+        Checks if an ticker is available via the Yahoo Finance API.
+        """
+        info = yf.Ticker(ticker).history(
+            period='7d',
+            interval='1d'
+        )
+        return len(info) > 0
+
+    # def _test_yf_download(self):
+    #     test_symbols = self.symbols
+    #     stocks_data = self.download_and_clean_data(self.symbols, self.start_date, end_date=self.end_date)
+    #     shape_msg = f"Shape of data: {stocks_data.shape}"
+    #     print("TEST:", shape_msg)
+    #     print("HEAD rows:", stocks_data.iloc[:5, 0])
+    #     print("HEAD cols:", stocks_data.columns[:5])
+    #     if stocks_data.shape[0] == 0 or stocks_data.shape[1] == 0:
+    #         msg = f"{test_symbols}: Failed to download stocks data from Yahoo Finance. {shape_msg}"
+    #         raise Exception(msg)
+    #     return stocks_data
         
-    def _download_and_clean_data(
+    def download_and_clean_data(
         self,
         symbols: Union[str, Iterable[str]],
         start_date: str,
@@ -58,7 +76,7 @@ class StocksDataLoader:
     @property
     def data(self) -> pd.DataFrame:
         if self._data is None:
-            self._data = self._download_and_clean_data(self.symbols, self.start_date, end_date=self.end_date)
+            self._data = self.download_and_clean_data(self.symbols, self.start_date, end_date=self.end_date)
         return self._data
 
     def get_data(
